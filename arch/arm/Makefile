@@ -65,6 +65,7 @@ machine-$(CONFIG_ARCH_KIRKWOOD)		+= kirkwood
 machine-$(CONFIG_ARCH_LPC32XX)		+= lpc32xx
 machine-$(CONFIG_ARCH_MEDIATEK)		+= mediatek
 machine-$(CONFIG_ARCH_MESON)		+= meson
+machine-$(CONFIG_ARCH_SEMIDRIVE)	+= semidrive
 machine-$(CONFIG_ARCH_MVEBU)		+= mvebu
 machine-$(CONFIG_ARCH_NEXELL)		+= nexell
 machine-$(CONFIG_ARCH_OMAP2PLUS)	+= omap2

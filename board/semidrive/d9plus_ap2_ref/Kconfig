@@ -1,0 +1,26 @@
+if TARGET_D9PLUS_AP2_REF
+
+config SYS_VENDOR
+	string "Vendor name"
+	default "semidrive"
+	help
+	  This option contains information about board name.
+	  Based on this option board/<CONFIG_SYS_VENDOR>/<CONFIG_SYS_BOARD> will
+	  be used.
+
+config SYS_BOARD
+	string "Board name"
+	default "d9plus_ap2_ref"
+	help
+	  This option contains information about board name.
+	  Based on this option board/<CONFIG_SYS_VENDOR>/<CONFIG_SYS_BOARD>.c will
+	  be used.
+
+config SYS_CONFIG_NAME
+	string "Board configuration name"
+	default "d9plus_ap2_ref"
+	help
+	  This option contains information about board configuration name.
+	  Based on this option include/configs/<CONFIG_SYS_CONFIG_NAME>.h header
+	  will be used for board configuration.
+endif

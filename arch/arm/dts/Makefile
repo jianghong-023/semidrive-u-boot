@@ -151,6 +151,12 @@ dtb-$(CONFIG_ROCKCHIP_RV1108) += \
 dtb-$(CONFIG_ARCH_S5P4418) += \
 	s5p4418-nanopi2.dtb
 
+dtb-$(CONFIG_ARCH_SEMIDRIVE) += \
+	d9_lite_d9310_ref.dtb \
+	d9_std_d9340_ref.dtb \
+	d9_plus_d9350_ap1_ref.dtb \
+	d9_plus_d9350_ap2_ref.dtb
+
 dtb-$(CONFIG_ARCH_MESON) += \
 	meson-gxbb-nanopi-k2.dtb \
 	meson-gxbb-odroidc2.dtb \

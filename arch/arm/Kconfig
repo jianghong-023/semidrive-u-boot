@@ -806,6 +806,14 @@ config ARCH_MESON
 	  targeted at media players and tablet computers. We currently
 	  support the S905 (GXBaby) 64-bit SoC.
 
+config ARCH_SEMIDRIVE
+	bool "Semidrive SoCs"
+	imply DISTRO_DEFAULTS
+	imply DM_RNG
+	help
+	  Support for the Semidrive SoC family developed by SEMIDRIVE Inc.,
+	  We currently support the D9 64-bit AMP SoC.
+
 config ARCH_MEDIATEK
 	bool "MediaTek SoCs"
 	select DM
@@ -1909,6 +1917,8 @@ source "arch/arm/mach-owl/Kconfig"
 source "arch/arm/mach-rmobile/Kconfig"
 
 source "arch/arm/mach-meson/Kconfig"
+
+source "arch/arm/mach-semidrive/Kconfig"
 
 source "arch/arm/mach-mediatek/Kconfig"
 

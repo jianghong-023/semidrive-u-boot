@@ -1,0 +1,37 @@
+if SEMIDRIVE_D9_SERIES
+
+config SYS_SOC
+	default "d9"
+
+choice
+	prompt "semidrive D9 series board select"
+
+config TARGET_D9_REF
+	bool "d9-std reference board"
+	help
+	    d9_ref is a reference board for d9340 SoC chip
+
+config TARGET_D9LITE_REF
+	bool "d9-lite reference board"
+	help
+	    d9lite_ref is a reference board for d9310 SoC chip
+
+config TARGET_d9PLUS_AP1_REF
+	bool "d9-plus reference board for ap1 cluster"
+	help
+	    d9plus_ap1 is a reference board for ap1 cluter in
+	    the d9350 SoC chip
+
+config TARGET_D9PLUS_AP2_REF
+	bool "d9-plus reference board for ap2 cluster"
+	help
+	    d9plus_ap2 is a reference board for ap2 cluter in
+	    the d9350 SoC chip
+endchoice
+
+source "board/semidrive/d9_ref/Kconfig"
+source "board/semidrive/d9lite_ref/Kconfig"
+source "board/semidrive/d9plus_ap1_ref/Kconfig"
+source "board/semidrive/d9plus_ap2_ref/Kconfig"
+
+endif

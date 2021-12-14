@@ -1,0 +1,38 @@
+if ARCH_SEMIDRIVE
+
+config SEMIDRIVE_COMMON
+	bool
+	select CLK
+	select DM
+	select DM_SERIAL
+	select SYSCON
+	select REGMAP
+	select PWRSEQ
+	select MMC_PWRSEQ
+	select BOARD_LATE_INIT
+	select SYSCOUNTER_TIMER
+	imply SYS_NS16550
+	imply CMD_DM
+
+config SYSCOUNTER_TIMER
+	bool
+
+choice
+	prompt "Platform select"
+	default SEMIDRIVE_D9_SERIES
+
+config SEMIDRIVE_D9_SERIES
+	bool "d9 series chips"
+	select ARM64
+	select SEMIDRIVE_COMMON
+	help
+	  Select this if your SoC is an d9 d9lite d9plus
+
+endchoice
+
+config SYS_MALLOC_F_LEN
+	default 0x1000
+
+source "arch/arm/mach-semidrive/d9/Kconfig"
+
+endif

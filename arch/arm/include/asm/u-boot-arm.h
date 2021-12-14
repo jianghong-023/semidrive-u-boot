@@ -49,6 +49,7 @@ void do_not_used(struct pt_regs *pt_regs);
 #ifdef CONFIG_ARM64
 void do_fiq(struct pt_regs *pt_regs, unsigned int esr);
 void do_irq(struct pt_regs *pt_regs, unsigned int esr);
+ulong read_far(void);
 #else
 void do_fiq(struct pt_regs *pt_regs);
 void do_irq(struct pt_regs *pt_regswq);

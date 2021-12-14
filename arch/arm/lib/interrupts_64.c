@@ -69,7 +69,8 @@ void show_regs(struct pt_regs *regs)
 void do_bad_sync(struct pt_regs *pt_regs, unsigned int esr)
 {
 	efi_restore_gd();
-	printf("Bad mode in \"Synchronous Abort\" handler, esr 0x%08x\n", esr);
+	printf("Bad mode in \"Synchronous Abort\" handler, esr 0x%08x, far 0x%08x\n",
+	       esr, read_far());
 	show_regs(pt_regs);
 	show_efi_loaded_images(pt_regs);
 	panic("Resetting CPU ...\n");
@@ -117,7 +118,7 @@ void do_bad_error(struct pt_regs *pt_regs, unsigned int esr)
 void do_sync(struct pt_regs *pt_regs, unsigned int esr)
 {
 	efi_restore_gd();
-	printf("\"Synchronous Abort\" handler, esr 0x%08x\n", esr);
+	printf("\"Synchronous Abort\" handler, esr 0x%08x, far 0x%08x\n", esr, read_far());
 	show_regs(pt_regs);
 	show_efi_loaded_images(pt_regs);
 	panic("Resetting CPU ...\n");

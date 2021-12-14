@@ -45,6 +45,7 @@ obj-$(CONFIG_S5P_SERIAL) += serial_s5p.o
 obj-$(CONFIG_MXC_UART) += serial_mxc.o
 obj-$(CONFIG_PXA_SERIAL) += serial_pxa.o
 obj-$(CONFIG_MESON_SERIAL) += serial_meson.o
+obj-$(CONFIG_KUNLUN_SERIAL) += serial_kunlun.o
 obj-$(CONFIG_INTEL_MID_SERIAL) += serial_intel_mid.o
 ifdef CONFIG_SPL_BUILD
 obj-$(CONFIG_ROCKCHIP_SERIAL) += serial_rockchip.o

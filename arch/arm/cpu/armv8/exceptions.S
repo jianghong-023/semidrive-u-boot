@@ -32,6 +32,16 @@
  * Also as we do not run anything in a lower exception level, we just provide
  * the first 8 entries for exceptions from the same EL.
  */
+	.global read_far
+read_far:
+	switch_el x1, 3f, 2f, 1f
+3:	mrs	x0, far_el3
+	ret
+2:	mrs	x0, far_el2
+	ret
+1:	mrs	x0, far_el1
+	ret
+
 	.align	11
 	.globl	vectors
 vectors:
