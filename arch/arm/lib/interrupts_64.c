@@ -11,22 +11,31 @@
 #include <linux/compiler.h>
 #include <efi_loader.h>
 
+#include <asm/system.h>
+
 DECLARE_GLOBAL_DATA_PTR;
 
 int interrupt_init(void)
 {
+	unsigned long value;
 	enable_interrupts();
-
+	if (current_el() == 2) {
+		asm volatile("mrs %0, hcr_el2" : "=r" (value));
+		value |= (1 << 4);
+		asm volatile("msr hcr_el2, %0" : : "r" (value));
+	}
 	return 0;
 }
 
 void enable_interrupts(void)
 {
+	asm volatile("msr daifclr, #2");
 	return;
 }
 
 int disable_interrupts(void)
 {
+	asm volatile("msr daifset, #2");
 	return 0;
 }
 
@@ -61,6 +70,14 @@ void show_regs(struct pt_regs *regs)
 		       i, regs->regs[i], i+1, regs->regs[i+1]);
 	printf("\n");
 	dump_instr(regs);
+}
+
+__weak void handle_irq_event(struct pt_regs *pt_regs, unsigned int esr)
+{
+	printf("\"Iiq\" handler, esr 0x%08x\n", esr);
+	show_regs(pt_regs);
+	show_efi_loaded_images(pt_regs);
+	panic("Resetting CPU ...\n");
 }
 
 /*
@@ -130,10 +147,7 @@ void do_sync(struct pt_regs *pt_regs, unsigned int esr)
 void do_irq(struct pt_regs *pt_regs, unsigned int esr)
 {
 	efi_restore_gd();
-	printf("\"Irq\" handler, esr 0x%08x\n", esr);
-	show_regs(pt_regs);
-	show_efi_loaded_images(pt_regs);
-	panic("Resetting CPU ...\n");
+	handle_irq_event(pt_regs, esr);
 }
 
 /*

@@ -1,0 +1,20 @@
+menu "Irqchip Support"
+
+config IRQCHIP
+	bool "Enable driver model for irqchip drivers"
+	depends on DM
+	help
+	  Enable driver model for irqchip access.
+
+config ARM_GIC
+	bool "ARM gicv2 support"
+	depends on IRQCHIP
+	help
+	  Select this to enable support for the gic controller.
+
+config NR_IRQS
+	int "Maximum number of IRQs (0-1024)"
+	range 0 1024
+	default "1024"
+
+endmenu
