@@ -10,6 +10,9 @@
 
 #include <linux/bitops.h>
 
+#define SC_CNTCR_ENABLE		BIT(0)
+#define ARCH_TIMER_IRQ		30
+
 /* System Counter */
 struct sctr_regs {
 	u32 cntcr;
@@ -20,6 +23,22 @@ struct sctr_regs {
 	u32 cntfid;
 };
 
-#define SC_CNTCR_ENABLE		BIT(0)
+enum timer_restart {
+	TIMER_NORESTART,
+	TIMER_RESTART,
+};
+
+struct timer {
+	int time_ms;
+	int (*function)(struct timer *timer);
+	int flag;
+};
+
+int init_timer(struct timer *timer);
+void start_timer(struct timer *timer);
+void stop_timer(void);
+int mod_timer(struct timer *timer, int time_ms);
+void del_timer(void);
+
 
 #endif

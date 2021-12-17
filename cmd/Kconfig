@@ -1783,6 +1783,11 @@ config CMD_TIMER
 	help
 	  Access the system timer.
 
+config CMD_TICK
+	bool "command for test tick features"
+	help
+	   Support for testing tick interrupts in uboot.
+
 config CMD_SOUND
 	bool "sound"
 	depends on SOUND
