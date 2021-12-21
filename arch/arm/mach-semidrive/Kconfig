@@ -11,6 +11,7 @@ config SEMIDRIVE_COMMON
 	select MMC_PWRSEQ
 	select BOARD_LATE_INIT
 	select SYSCOUNTER_TIMER
+	select SUPPORT_SPL
 	imply SYS_NS16550
 	imply CMD_DM
 

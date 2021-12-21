@@ -595,6 +595,8 @@ void board_init_f(ulong dummy)
 }
 #endif
 
+/* Fix me later, Now use the function in mach-semidrive */
+#ifndef CONFIG_ARCH_SEMIDRIVE
 void board_init_r(gd_t *dummy1, ulong dummy2)
 {
 	u32 spl_boot_list[] = {
@@ -745,7 +747,7 @@ void board_init_r(gd_t *dummy1, ulong dummy2)
 	spl_board_prepare_for_boot();
 	jump_to_image_no_args(&spl_image);
 }
-
+#endif
 /*
  * This requires UART clocks to be enabled.  In order for this to work the
  * caller must ensure that the gd pointer is valid.

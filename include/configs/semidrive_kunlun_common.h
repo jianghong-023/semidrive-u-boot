@@ -20,6 +20,17 @@
 //#define DEBUG 1
 #endif
 
+#ifdef CONFIG_SPL_BUILD
+/* Define for spl */
+#define CONFIG_SPL_MAX_SIZE		0x400000
+#define CONFIG_SPL_BSS_MAX_SIZE		0x80000
+#define CONFIG_SPL_BSS_START_ADDR	0x59580000
+#define CONFIG_ECO_ATF_MEMBASE		0x46000000
+/* As spl without dtb, so it can't use DM mode */
+#define CONFIG_CONS_INDEX		1
+#define CONFIG_SYS_NS16550_COM1		CONFIG_DEBUG_UART_BASE
+#endif
+
 #define CONFIG_CPU_ARMV8
 #define CONFIG_REMAKE_ELF
 #define CONFIG_SYS_MAXARGS		32
