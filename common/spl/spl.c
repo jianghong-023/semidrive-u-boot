@@ -581,6 +581,9 @@ static int boot_from_devices(struct spl_image_info *spl_image,
 #if defined(CONFIG_SPL_FRAMEWORK_BOARD_INIT_F)
 void board_init_f(ulong dummy)
 {
+#ifdef CONFIG_DEBUG_UART
+	debug_uart_init();
+#endif
 	if (CONFIG_IS_ENABLED(OF_CONTROL)) {
 		int ret;
 
