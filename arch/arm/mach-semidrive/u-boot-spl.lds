@@ -45,10 +45,12 @@ SECTIONS
 
 	_image_binary_end = .;
 
-	. = ALIGN(8);
+	/* reserve 200K for dtb */
+	. = ALIGN(0x32000);
+
 	__bss_start = .;
 	.bss : {
-		*(.*bss)
+		*(.*bss*)
 	}
 	__bss_end = .;
 
