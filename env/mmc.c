@@ -19,6 +19,9 @@
 #include <part.h>
 #include <search.h>
 #include <errno.h>
+#ifdef CONFIG_MMC_SDRV
+#include <emmc_partitions.h>
+#endif
 
 #define __STR(X) #X
 #define STR(X) __STR(X)
@@ -296,6 +299,75 @@ static inline int read_env(struct mmc *mmc, unsigned long size,
 	return (n == blk_cnt) ? 0 : -1;
 }
 
+#ifdef CONFIG_MMC_SDRV
+static int env_mmc_modify(void)
+{
+	struct env_entry e, *ep;
+	struct partitions *part = NULL;
+	char *buf, *buff, *tmp, *new;
+	u32 num, len, len1;
+
+	part = find_mmc_partition_by_name("rootfs_a");
+	if (!part) {
+		pr_err("part read fail\n");
+		return -1;
+	}
+
+	e.key = "bootargs";
+	e.data = NULL;
+	hsearch_r(e, ENV_FIND, &ep, &env_htab, 0);
+	if (!ep)
+		return -1;
+	len = strlen(ep->data);
+
+	buf = strstr(ep->data, "root=/dev/mmcblk0p");
+	buf += strlen("root=/dev/mmcblk0p");
+	num = simple_strtol(buf, &buff, 10);
+	if (num == part->num)
+		return 0;
+
+	new = malloc(len + 1);
+	if (!new)
+		return -1;
+
+	memset(new, 0, len + 1);
+
+	len1 = buf - ep->data;
+	tmp = new;
+	strncpy(tmp, ep->data, len1);
+	if (part->num < 10) {
+		tmp[len1] = part->num + 0x30;
+		tmp += len1 + 1;
+	} else if (part->num < 100) {
+		tmp[len1] = part->num / 10 + 0x30;
+		tmp[len1 + 1] = part->num % 10 + 0x30;
+		tmp += len1 + 2;
+	} else {
+		tmp[len1] = part->num / 100 + 0x30;
+		tmp[len1 + 1] = (part->num - 100) / 10 + 0x30;
+		tmp[len1 + 2] = part->num % 10 + 0x30;
+		tmp += len1 + 3;
+	}
+	strncpy(tmp, buff, strlen(buff));
+	tmp += strlen(buff);
+	tmp[0] = '\0';
+
+	e.key = "bootargs";
+	e.data = new;
+	hsearch_r(e, ENV_ENTER, &ep, &env_htab, H_PROGRAMMATIC);
+	if (!ep) {
+		free(new);
+		return -1;
+	}
+
+	env_mmc_save();
+
+	free(new);
+
+	return 0;
+}
+#endif
+
 #ifdef CONFIG_ENV_OFFSET_REDUND
 static int env_mmc_load(void)
 {
@@ -383,6 +455,9 @@ fini:
 err:
 	if (ret)
 		env_set_default(errmsg, 0);
+#ifdef CONFIG_MMC_SDRV
+	env_mmc_modify();
+#endif
 #endif
 	return ret;
 }

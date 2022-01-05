@@ -515,6 +515,27 @@ config MMC_SDHCI_BCMSTB
 
 	  If unsure, say N.
 
+config MMC_SDHCI_DWCMSHC
+	tristate "SDHCI support for the Synopsys DWC MSHC"
+	depends on BLK && DM_MMC
+	depends on MMC_SDHCI
+	depends on OF_CONTROL
+	help
+	  This selects Synopsys DesignWare Cores Mobile Storage Controller
+	  support.
+	  If you have a controller with this interface, say Y or M here.
+	  If unsure, say N.
+
+config MMC_SDRV
+	tristate "MMC support for the SDRV"
+	depends on MMC_SDHCI_DWCMSHC
+	help
+	  This selects SemiDrive MMC partition config support.
+	  mmc may need ext4 filesystem supported, so add gpt
+	  partitions supported.
+	  If you need this interface, say Y or M here.
+	  If unsure, say N.
+
 config MMC_SDHCI_CADENCE
 	bool "SDHCI support for the Cadence SD/SDIO/eMMC controller"
 	depends on BLK && DM_MMC

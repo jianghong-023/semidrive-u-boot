@@ -13,6 +13,7 @@
 #include <part.h>
 #include <sparse_format.h>
 #include <image-sparse.h>
+#include <emmc_partitions.h>
 
 static int curr_device = -1;
 
@@ -351,6 +352,50 @@ static int do_mmc_read(struct cmd_tbl *cmdtp, int flag,
 	return (n == cnt) ? CMD_RET_SUCCESS : CMD_RET_FAILURE;
 }
 
+static int do_mmc_part_read(struct cmd_tbl *cmdtp, int flag,
+			    int argc, char *const argv[])
+{
+	struct mmc *mmc;
+	u32 blk = 0, cnt = 0, n = 0;
+	void *addr;
+	char *name;
+	struct partitions *part;
+
+	if (argc < 3)
+		return CMD_RET_USAGE;
+
+	mmc = init_mmc_device(curr_device, false);
+	if (!mmc)
+		return CMD_RET_FAILURE;
+
+	name = argv[1];
+	part = find_mmc_partition_by_name(name);
+	if (!part) {
+		pr_err("part read fail\n");
+		return CMD_RET_FAILURE;
+	}
+	addr = (void *)simple_strtoul(argv[2], NULL, 16);
+	if (argc > 3)
+		blk = simple_strtoul(argv[3], NULL, 16);
+	if (argc > 4)
+		cnt = simple_strtoul(argv[4], NULL, 16);
+
+	if (blk > part->size)
+		return CMD_RET_FAILURE;
+
+	if (!cnt || cnt > (part->size - blk))
+		cnt = part->size - blk;
+	blk += part->offset;
+
+	printf("\nMMC read: dev # %d, block # %d, count %d ... ",
+	       curr_device, blk, cnt);
+
+	n = blk_dread(mmc_get_blk_desc(mmc), blk, cnt, addr);
+	printf("%d blocks read: %s\n", n, (n == cnt) ? "OK" : "ERROR");
+
+	return (n == cnt) ? CMD_RET_SUCCESS : CMD_RET_FAILURE;
+}
+
 #if CONFIG_IS_ENABLED(CMD_MMC_SWRITE)
 static lbaint_t mmc_sparse_write(struct sparse_storage *info, lbaint_t blk,
 				 lbaint_t blkcnt, const void *buffer)
@@ -463,6 +508,100 @@ static int do_mmc_erase(struct cmd_tbl *cmdtp, int flag,
 	mmc = init_mmc_device(curr_device, false);
 	if (!mmc)
 		return CMD_RET_FAILURE;
+
+	printf("\nMMC erase: dev # %d, block # %d, count %d ... ",
+	       curr_device, blk, cnt);
+
+	if (mmc_getwp(mmc) == 1) {
+		printf("Error: card is write protected!\n");
+		return CMD_RET_FAILURE;
+	}
+	n = blk_derase(mmc_get_blk_desc(mmc), blk, cnt);
+	printf("%d blocks erased: %s\n", n, (n == cnt) ? "OK" : "ERROR");
+
+	return (n == cnt) ? CMD_RET_SUCCESS : CMD_RET_FAILURE;
+}
+
+static int do_mmc_part_write(struct cmd_tbl *cmdtp, int flag,
+			     int argc, char *const argv[])
+{
+	struct mmc *mmc;
+	u32 blk = 0, cnt = 0, n = 0;
+	void *addr;
+	char *name;
+	struct partitions *part;
+
+	if (argc < 3)
+		return CMD_RET_USAGE;
+
+	mmc = init_mmc_device(curr_device, false);
+	if (!mmc)
+		return CMD_RET_FAILURE;
+
+	name = argv[1];
+	part = find_mmc_partition_by_name(name);
+	if (!part) {
+		pr_err("part read fail\n");
+		return CMD_RET_FAILURE;
+	}
+	addr = (void *)simple_strtoul(argv[2], NULL, 16);
+	if (argc > 3)
+		blk = simple_strtoul(argv[3], NULL, 16);
+	if (argc > 4)
+		cnt = simple_strtoul(argv[4], NULL, 16);
+
+	if (blk > part->size)
+		return CMD_RET_FAILURE;
+
+	if (!cnt || cnt > (part->size - blk))
+		cnt = part->size - blk;
+	blk += part->offset;
+
+	printf("\nMMC write: dev # %d, block # %d, count %d ... ",
+	       curr_device, blk, cnt);
+
+	if (mmc_getwp(mmc) == 1) {
+		printf("Error: card is write protected!\n");
+		return CMD_RET_FAILURE;
+	}
+	n = blk_dwrite(mmc_get_blk_desc(mmc), blk, cnt, addr);
+	printf("%d blocks written: %s\n", n, (n == cnt) ? "OK" : "ERROR");
+
+	return (n == cnt) ? CMD_RET_SUCCESS : CMD_RET_FAILURE;
+}
+
+static int do_mmc_part_erase(struct cmd_tbl *cmdtp, int flag,
+			     int argc, char *const argv[])
+{
+	struct mmc *mmc;
+	u32 blk = 0, cnt = 0, n = 0;
+	char *name;
+	struct partitions *part;
+
+	if (argc < 2)
+		return CMD_RET_USAGE;
+
+	mmc = init_mmc_device(curr_device, false);
+	if (!mmc)
+		return CMD_RET_FAILURE;
+
+	name = argv[1];
+	part = find_mmc_partition_by_name(name);
+	if (!part) {
+		pr_err("part read fail\n");
+		return CMD_RET_FAILURE;
+	}
+	if (argc > 2)
+		blk = simple_strtoul(argv[2], NULL, 16);
+	if (argc > 3)
+		cnt = simple_strtoul(argv[3], NULL, 16);
+
+	if (blk > part->size)
+		return CMD_RET_FAILURE;
+
+	if (!cnt || cnt > (part->size - blk))
+		cnt = part->size - blk;
+	blk += part->offset;
 
 	printf("\nMMC erase: dev # %d, block # %d, count %d ... ",
 	       curr_device, blk, cnt);
@@ -935,10 +1074,13 @@ static int do_mmc_boot_wp(struct cmd_tbl *cmdtp, int flag,
 static struct cmd_tbl cmd_mmc[] = {
 	U_BOOT_CMD_MKENT(info, 1, 0, do_mmcinfo, "", ""),
 	U_BOOT_CMD_MKENT(read, 4, 1, do_mmc_read, "", ""),
+	U_BOOT_CMD_MKENT(part_read, 5, 1, do_mmc_part_read, "", ""),
 	U_BOOT_CMD_MKENT(wp, 1, 0, do_mmc_boot_wp, "", ""),
 #if CONFIG_IS_ENABLED(MMC_WRITE)
 	U_BOOT_CMD_MKENT(write, 4, 0, do_mmc_write, "", ""),
 	U_BOOT_CMD_MKENT(erase, 3, 0, do_mmc_erase, "", ""),
+	U_BOOT_CMD_MKENT(part_write, 5, 0, do_mmc_part_write, "", ""),
+	U_BOOT_CMD_MKENT(part_erase, 4, 0, do_mmc_part_erase, "", ""),
 #endif
 #if CONFIG_IS_ENABLED(CMD_MMC_SWRITE)
 	U_BOOT_CMD_MKENT(swrite, 3, 0, do_mmc_sparse_write, "", ""),
@@ -1004,6 +1146,9 @@ U_BOOT_CMD(
 	"mmc erase blk# cnt\n"
 	"mmc rescan\n"
 	"mmc part - lists available partition on current mmc device\n"
+	"mmc part_read partition_name addr [blk#] [cnt]\n"
+	"mmc part_write partition_name addr [blk#] [cnt]\n"
+	"mmc part_erase partition_name [blk#] [cnt]\n"
 	"mmc dev [dev] [part] - show or set current mmc device [partition]\n"
 	"mmc list - lists available devices\n"
 	"mmc wp - power on write protect boot partitions\n"

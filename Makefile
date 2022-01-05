@@ -479,7 +479,7 @@ scripts_basic:
 	$(Q)rm -f .tmp_quiet_recordmcount
 	$(Q)if [ -d "$(srctree)/.git/hooks" ];then \
 		cp $(srctree)/scripts/semidrive/pre-commit $(srctree)/.git/hooks; \
-		chmod +x $(srctree)/.git/hooks/; \
+		chmod +x $(srctree)/.git/hooks/*; \
 	fi
 
 # To avoid any implicit rule to kick in, define an empty command.
