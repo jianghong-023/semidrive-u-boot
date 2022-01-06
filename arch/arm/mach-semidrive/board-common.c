@@ -22,6 +22,7 @@
 #include <u-boot/crc.h>
 #include <dm/uclass.h>
 #include <dm/device.h>
+#include <wdt.h>
 
 #if CONFIG_IS_ENABLED(FASTBOOT)
 #include <asm/psci.h>
@@ -71,7 +72,7 @@ void semidrive_wdt_reset(void)
 	if (ret) {
 		printf("get wdt uclass failed\n");
 		return;
-    }
+	}
 
 	uclass_foreach_dev(dev, uc) {
 		if (dev->driver->priv_auto)
