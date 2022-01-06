@@ -60,6 +60,10 @@
 #define	CQSPI_REG_CONFIG_ENABLE			BIT(0)
 #define	CQSPI_REG_CONFIG_CLK_POL		BIT(1)
 #define	CQSPI_REG_CONFIG_CLK_PHA		BIT(2)
+#ifdef CONFIG_SDRV_OSPI
+#define	CQSPI_REG_CONFIG_RST			BIT(5)
+#define	CQSPI_REG_CONFIG_RST_CFG		BIT(6)
+#endif
 #define	CQSPI_REG_CONFIG_DIRECT			BIT(7)
 #define	CQSPI_REG_CONFIG_DECODE			BIT(9)
 #define	CQSPI_REG_CONFIG_XIP_IMM		BIT(18)
@@ -159,6 +163,8 @@
 #define	CQSPI_REG_INDIRECTWRWATERMARK		0x74
 #define	CQSPI_REG_INDIRECTWRSTARTADDR		0x78
 #define	CQSPI_REG_INDIRECTWRBYTES		0x7C
+
+#define	CQSPI_REG_INDIREC_TRI_ADDR_RANGE 0x80
 
 #define	CQSPI_REG_CMDADDRESS			0x94
 #define	CQSPI_REG_CMDREADDATALOWER		0xA0
@@ -377,6 +383,23 @@ void cadence_qspi_apb_delay(void *reg_base,
 	cadence_qspi_apb_controller_enable(reg_base);
 }
 
+#ifdef CONFIG_SDRV_OSPI
+void cadence_qspi_reset(void *reg_base)
+{
+	unsigned int reg;
+
+	reg = readl(reg_base + CQSPI_REG_CONFIG);
+	reg |= CQSPI_REG_CONFIG_RST_CFG;
+	writel(reg, reg_base + CQSPI_REG_CONFIG);
+	reg |= CQSPI_REG_CONFIG_RST;
+	writel(reg, reg_base + CQSPI_REG_CONFIG);
+	mdelay(1);
+	reg &= ~CQSPI_REG_CONFIG_RST;
+	writel(reg, reg_base + CQSPI_REG_CONFIG);
+	mdelay(1);
+}
+#endif
+
 void cadence_qspi_apb_controller_init(struct cadence_spi_plat *plat)
 {
 	unsigned reg;
@@ -397,11 +420,15 @@ void cadence_qspi_apb_controller_init(struct cadence_spi_plat *plat)
 
 	/* Indirect mode configurations */
 	writel(plat->fifo_depth / 2, plat->regbase + CQSPI_REG_SRAMPARTITION);
+	writel(7, plat->regbase + CQSPI_REG_INDIREC_TRI_ADDR_RANGE);
 
 	/* Disable all interrupts */
 	writel(0, plat->regbase + CQSPI_REG_IRQMASK);
 
 	cadence_qspi_apb_controller_enable(plat->regbase);
+#ifdef CONFIG_SDRV_OSPI
+	cadence_qspi_reset(plat->regbase);
+#endif
 }
 
 static int cadence_qspi_apb_exec_flash_cmd(void *reg_base,

@@ -121,6 +121,15 @@ config CADENCE_QSPI
 	  used to access the SPI NOR flash on platforms embedding this
 	  Cadence IP core.
 
+config SDRV_OSPI
+	bool "SDRV Cadence OSPI driver"
+	depends on CADENCE_QSPI
+	help
+	  Enable the Cadence OCTAL-SPI (OSPI) driver. Add ospi controller
+	  setting, adjust flash cfg operation. This driver can be used to
+	  access the SPI NOR flash on platforms embedding this Cadence IP
+	  core.
+
 config CF_SPI
         bool "ColdFire SPI driver"
         help
