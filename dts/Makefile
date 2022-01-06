@@ -16,9 +16,14 @@ else
 DTB := arch/$(ARCH)/dts/$(DEVICE_TREE).dtb
 endif
 
+ifeq ($(CONFIG_ARCH_SEMIDRIVE), )
 $(obj)/dt-$(SPL_NAME).dtb: dts/dt.dtb $(objtree)/tools/fdtgrep FORCE
 	mkdir -p $(dir $@)
 	$(call if_changed,fdtgrep)
+else
+$(obj)/dt-$(SPL_NAME).dtb: $(DTB) FORCE
+	$(call if_changed,shipped)
+endif
 
 ifeq ($(CONFIG_OF_DTB_PROPS_REMOVE),y)
 $(obj)/dt.dtb: $(DTB) $(objtree)/tools/fdtgrep FORCE

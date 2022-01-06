@@ -177,21 +177,6 @@ static int semidrive_serial_pending(struct udevice *dev, bool input)
 static int semidrive_serial_probe(struct udevice *dev)
 {
 	struct semidrive_priv *priv = dev_get_priv(dev);
-
-	/* Disable interrupt */
-	writel(CONFIG_SYS_NS16550_IER, &priv->regs->ier);
-
-	writel(UART_MCRVAL, &priv->regs->mcr);
-	writel(UART_FCRVAL, &priv->regs->fcr);
-
-	_semidrive_serial_setbrg(priv, CONFIG_BAUDRATE);
-	return 0;
-}
-
-#if CONFIG_IS_ENABLED(OF_CONTROL) && !CONFIG_IS_ENABLED(OF_PLATDATA)
-static int semidrive_serial_of_to_plat(struct udevice *dev)
-{
-	struct semidrive_priv *priv = dev_get_priv(dev);
 	fdt_addr_t addr;
 	int err;
 	struct clk clk;
@@ -220,9 +205,21 @@ static int semidrive_serial_of_to_plat(struct udevice *dev)
 		return -EINVAL;
 	}
 
+	/* Disable interrupt */
+	writel(CONFIG_SYS_NS16550_IER, &priv->regs->ier);
+
+	writel(UART_MCRVAL, &priv->regs->mcr);
+	writel(UART_FCRVAL, &priv->regs->fcr);
+
+	_semidrive_serial_setbrg(priv, CONFIG_BAUDRATE);
 
 	return 0;
 }
+
+static const struct udevice_id semidrive_serial_ids[] = {
+	{ .compatible = "snps,dw-apb-uart", },
+	{}
+};
 
 static const struct dm_serial_ops semidrive_serial_ops = {
 	.putc = semidrive_serial_putc,
@@ -231,19 +228,11 @@ static const struct dm_serial_ops semidrive_serial_ops = {
 	.setbrg = semidrive_serial_setbrg,
 };
 
-static const struct udevice_id semidrive_serial_ids[] = {
-	{ .compatible = "snps,dw-apb-uart", },
-	{}
-};
-#endif /* OF_CONTROL && !OF_PLATDATA */
-
 U_BOOT_DRIVER(semidrive_serial) = {
 	.name	= "semidrive_serial",
 	.id	= UCLASS_SERIAL,
-#if CONFIG_IS_ENABLED(OF_CONTROL) && !CONFIG_IS_ENABLED(OF_PLATDATA)
 	.of_match = semidrive_serial_ids,
-	.of_to_plat = semidrive_serial_of_to_plat,
-#endif
+	.plat_auto	= sizeof(struct semidrive_priv),
 	.priv_auto	= sizeof(struct semidrive_priv),
 	.probe = semidrive_serial_probe,
 	.ops	= &semidrive_serial_ops,
