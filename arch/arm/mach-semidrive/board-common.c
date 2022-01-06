@@ -38,6 +38,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 __weak int board_init(void)
 {
+	run_command("gpio status", 0);
 	return 0;
 }
 
