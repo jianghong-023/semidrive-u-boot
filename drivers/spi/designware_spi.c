@@ -112,6 +112,9 @@
 #define SR_DCOL				BIT(6)
 
 #define RX_TIMEOUT			1000		/* timeout in ms */
+#ifdef CONFIG_SDRV_DW_SPI
+#define SPI_CLKSRC 120000000
+#endif
 
 struct dw_spi_plat {
 	s32 frequency;		/* Default clock frequency, -1 for none */
@@ -350,9 +353,13 @@ static int dw_spi_probe(struct udevice *bus)
 	priv->regs = plat->regs;
 	priv->freq = plat->frequency;
 
+#ifdef CONFIG_SDRV_DW_SPI
+	priv->bus_clk_rate = SPI_CLKSRC;
+#else
 	ret = dw_spi_get_clk(bus, &priv->bus_clk_rate);
 	if (ret)
 		return ret;
+#endif
 
 	ret = dw_spi_reset(bus);
 	if (ret)

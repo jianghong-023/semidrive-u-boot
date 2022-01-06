@@ -16,8 +16,8 @@
 	"stdout=" STDOUT_CFG "\0" \
 	"stderr=" STDOUT_CFG "\0" \
 	"fdt_addr_r=0x57200000\0" \
-	"kernel_addr_r=0x5E000000\0" \
-	"kernel_comp_addr_r=0x5F000000\0" \
+	"kernel_addr_r=0x59480000\0" \
+	"kernel_comp_addr_r=0x5A000000\0" \
 	"kernel_comp_size=0x1000000\0" \
 	"fdtfile=semidrive/" CONFIG_DEFAULT_DEVICE_TREE ".dtb\0" \
 	"load_kernel_dtb=mmc dev 0; mmc part_read dtb_a ${fdt_addr_r}\0" \

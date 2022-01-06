@@ -16,8 +16,8 @@
 			arch = "arm64";
 			os = "linux";
 			compression = "gzip";
-			load = <0x5c480000>;
-			entry = <0x5c480000>;
+			load = <0x57480000>;
+			entry = <0x57480000>;
 			hash-1 {
 				algo = "crc32";
 			};

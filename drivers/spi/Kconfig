@@ -149,6 +149,16 @@ config DESIGNWARE_SPI
 	  access the SPI NOR flash on platforms embedding this Designware
 	  IP core.
 
+config SDRV_DW_SPI
+	bool "SDRV Designware SPI driver"
+	depends on DESIGNWARE_SPI
+	help
+	  Enable the SDRV Designware SPI driver. This macro is used for
+	  separation when compatibility configurations related to the Semidrive
+	  SPI controller need to be adapted. This driver can be used to
+	  access the SPI Transfer data on platforms embedding this Designware
+	  IP core.
+
 config EXYNOS_SPI
 	bool "Samsung Exynos SPI driver"
 	help

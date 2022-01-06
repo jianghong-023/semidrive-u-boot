@@ -1,5 +1,5 @@
 /*
- * D9_Ref U-Boot uImage source file containing a single kernel and FDT blob
+ * D9PLUS_AP1_Ref U-Boot uImage source file containing a single kernel and FDT blob
  */
 
 /dts-v1/;
@@ -10,7 +10,7 @@
 
 	images {
 		kernel {
-			description = "d9_ref Linux kernel";
+			description = "d9plus_ap1_ref Linux kernel";
 			data = /incbin/("./Image.gz");
 			type = "kernel";
 			arch = "arm64";
@@ -46,12 +46,12 @@
 			description = "Boot Linux kernel with FDT blob";
 			kernel = "kernel";
 			fdt = "fdt-1";
-			compatible = "d9_ref,safety_boot";
+			compatible = "d9plus_ap1_ref,safety_boot";
 		};
 		conf@2 {
 			description = "Boot Linux kernel without FDT blob";
 			kernel = "kernel";
-			compatible = "d9_ref,emmc_boot";
+			compatible = "d9plus_ap1_ref,emmc_boot";
 		};
 	};
 };
