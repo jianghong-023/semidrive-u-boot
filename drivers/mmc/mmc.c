@@ -25,11 +25,13 @@
 #include <linux/list.h>
 #include <div64.h>
 #include "mmc_private.h"
+#include <emmc_partitions.h>
 
 #define DEFAULT_CMD6_TIMEOUT_MS  500
 
 static int mmc_set_signal_voltage(struct mmc *mmc, uint signal_voltage);
 
+bool is_partition_checked;
 #if !CONFIG_IS_ENABLED(DM_MMC)
 
 static int mmc_wait_dat0(struct mmc *mmc, int state, int timeout_us)
@@ -2928,6 +2930,14 @@ int mmc_init(struct mmc *mmc)
 		err = mmc_complete_init(mmc);
 	if (err)
 		pr_info("%s: %d, time %lu\n", __func__, err, get_timer(start));
+	if (IS_MMC(mmc)) {
+		if (!is_partition_checked) {
+			if (!mmc_device_init(mmc)) {
+				is_partition_checked = true;
+				pr_info("eMMC/TSD partition table have been checked OK!\n");
+			}
+		}
+	}
 
 	return err;
 }

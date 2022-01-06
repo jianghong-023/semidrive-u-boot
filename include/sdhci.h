@@ -32,6 +32,7 @@
 #define  SDHCI_TRNS_DMA		BIT(0)
 #define  SDHCI_TRNS_BLK_CNT_EN	BIT(1)
 #define  SDHCI_TRNS_ACMD12	BIT(2)
+#define  SDHCI_AUTO_CMD23_EN	BIT(3)
 #define  SDHCI_TRNS_READ	BIT(4)
 #define  SDHCI_TRNS_MULTI	BIT(5)
 
@@ -99,6 +100,7 @@
 #define  SDHCI_DIV_MASK_LEN	8
 #define  SDHCI_DIV_HI_MASK	0x300
 #define  SDHCI_PROG_CLOCK_MODE  BIT(5)
+#define  SDHCI_CLOCK_PLL_EN	BIT(3)
 #define  SDHCI_CLOCK_CARD_EN	BIT(2)
 #define  SDHCI_CLOCK_INT_STABLE	BIT(1)
 #define  SDHCI_CLOCK_INT_EN	BIT(0)
@@ -144,7 +146,7 @@
 		SDHCI_INT_DATA_END_BIT | SDHCI_INT_ADMA_ERROR)
 #define SDHCI_INT_ALL_MASK	((unsigned int)-1)
 
-#define SDHCI_ACMD12_ERR	0x3C
+#define SDHCI_AUTO_CMD_STATUS 0x3C
 
 #define SDHCI_HOST_CONTROL2	0x3E
 #define  SDHCI_CTRL_UHS_MASK	0x0007
@@ -153,7 +155,7 @@
 #define  SDHCI_CTRL_UHS_SDR50	0x0002
 #define  SDHCI_CTRL_UHS_SDR104	0x0003
 #define  SDHCI_CTRL_UHS_DDR50	0x0004
-#define  SDHCI_CTRL_HS400	0x0005 /* Non-standard */
+#define  SDHCI_CTRL_HS400	0x0007 /* Non-standard */
 #define  SDHCI_CTRL_VDD_180	0x0008
 #define  SDHCI_CTRL_DRV_TYPE_MASK	0x0030
 #define  SDHCI_CTRL_DRV_TYPE_B	0x0000
@@ -162,6 +164,10 @@
 #define  SDHCI_CTRL_DRV_TYPE_D	0x0030
 #define  SDHCI_CTRL_EXEC_TUNING	0x0040
 #define  SDHCI_CTRL_TUNED_CLK	0x0080
+#define  SDHCI_ADMA2_LEN_MODE	0x0400
+#define  SDHCI_CMD23_ENABLE     0x0800
+#define  SDHCI_CTRL_V4_MODE     0x1000
+#define  SDHCI_CTRL_64BIT_ADDR      0x2000
 #define  SDHCI_CTRL_PRESET_VAL_ENABLE	0x8000
 
 #define SDHCI_CAPABILITIES	0x40
@@ -181,6 +187,7 @@
 #define  SDHCI_CAN_VDD_330	BIT(24)
 #define  SDHCI_CAN_VDD_300	BIT(25)
 #define  SDHCI_CAN_VDD_180	BIT(26)
+#define  SDHCI_CAN_64BIT_V4	BIT(27)
 #define  SDHCI_CAN_64BIT	BIT(28)
 
 #define SDHCI_CAPABILITIES_1	0x44
@@ -245,6 +252,9 @@
 #define SDHCI_QUIRK_WAIT_SEND_CMD	(1 << 6)
 #define SDHCI_QUIRK_USE_WIDE8		(1 << 8)
 #define SDHCI_QUIRK_NO_1_8_V		(1 << 9)
+/* Controller reports wrong base clock capability */
+#define SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN BIT(25)
+#define SDHCI_QUIRK_64BIT_DMA_ADDR BIT(10)
 
 /* to make gcc happy */
 struct sdhci_host;
@@ -266,7 +276,12 @@ struct sdhci_ops {
 	int	(*get_cd)(struct sdhci_host *host);
 	void	(*set_control_reg)(struct sdhci_host *host);
 	int	(*set_ios_post)(struct sdhci_host *host);
+#ifdef CONFIG_MMC_SDHCI_DWCMSHC
+	int (*reset)(struct sdhci_host *host);
+	void (*set_clock)(struct sdhci_host *host, unsigned long clock);
+#else
 	void	(*set_clock)(struct sdhci_host *host, u32 div);
+#endif
 	int (*platform_execute_tuning)(struct mmc *host, u8 opcode);
 	void (*set_delay)(struct sdhci_host *host);
 	int	(*deferred_probe)(struct sdhci_host *host);
@@ -293,6 +308,16 @@ struct sdhci_ops {
 #define ADMA_DESC_TRANSFER_DATA		ADMA_DESC_ATTR_ACT2
 #define ADMA_DESC_LINK_DESC	(ADMA_DESC_ATTR_ACT1 | ADMA_DESC_ATTR_ACT2)
 
+#ifdef CONFIG_MMC_SDHCI_DWCMSHC
+#define ADMA2_V4_MAX_LEN	0x1000000
+struct sdhci_adma64_desc {
+	u32 attr;
+	u32 addr_lo;
+	u32 addr_hi;
+	u32 rsvd;
+} __packed;
+#endif
+
 struct sdhci_adma_desc {
 	u8 attr;
 	u8 reserved;
@@ -302,6 +327,36 @@ struct sdhci_adma_desc {
 	u32 addr_hi;
 #endif
 } __packed;
+
+#ifdef CONFIG_MMC_SDHCI_DWCMSHC
+struct clkgen_app_ip_cfg {
+	//clk select num 0~SLICE_CLK_MAX_NUM
+	u8 clk_src_sel_num;
+	u32 pre_div;
+	u32 post_div;
+};
+
+enum card_id {
+	MSHC1 = 1,
+	MSHC2,
+	MSHC3,
+	MSHC4,
+};
+
+struct sdhci_dwcmshc_plat {
+	struct mmc_config cfg;
+	struct mmc mmc;
+	int tuning_delay;
+	int tuning_in_progress;
+	int tuning_err;
+	/* bus clock */
+	struct clk	*clk;
+	u32	scr_signals_ddr;
+	bool card_is_emmc;
+	bool v4_mode;
+	enum card_id id;
+};
+#endif
 
 struct sdhci_host {
 	const char *name;
@@ -315,6 +370,9 @@ struct sdhci_host {
 	struct mmc *mmc;
 	const struct sdhci_ops *ops;
 	int index;
+#ifdef CONFIG_MMC_SDHCI_DWCMSHC
+	struct sdhci_dwcmshc_plat *plat;
+#endif
 
 	int bus_width;
 	struct gpio_desc pwr_gpio;	/* Power GPIO */
@@ -333,7 +391,11 @@ struct sdhci_host {
 #define USE_DMA		(USE_SDMA | USE_ADMA | USE_ADMA64)
 	dma_addr_t adma_addr;
 #if CONFIG_IS_ENABLED(MMC_SDHCI_ADMA)
+#ifdef CONFIG_MMC_SDHCI_DWCMSHC
+	struct sdhci_adma64_desc *adma_desc_table;
+#else
 	struct sdhci_adma_desc *adma_desc_table;
+#endif
 #endif
 };
 
@@ -502,6 +564,11 @@ int sdhci_set_clock(struct mmc *mmc, unsigned int clock);
  */
 void sdhci_set_control_reg(struct sdhci_host *host);
 extern const struct dm_mmc_ops sdhci_ops;
+#ifdef CONFIG_MMC_SDHCI_DWCMSHC
+void sdhci_enable_v4_mode(struct sdhci_host *host);
+void sdhci_prepare_adma2_table(struct sdhci_adma64_desc *table,
+			       struct mmc_data *data, dma_addr_t addr);
+#endif
 #else
 #endif
 

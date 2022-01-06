@@ -2969,16 +2969,16 @@ sub process {
 		}
 
 # Check for added, moved or deleted files
-		if (!$reported_maintainer_file && !$in_commit_log &&
-		    ($line =~ /^(?:new|deleted) file mode\s*\d+\s*$/ ||
-		     $line =~ /^rename (?:from|to) [\w\/\.\-]+\s*$/ ||
-		     ($line =~ /\{\s*([\w\/\.\-]*)\s*\=\>\s*([\w\/\.\-]*)\s*\}/ &&
-		      (defined($1) || defined($2))))) {
-			$is_patch = 1;
-			$reported_maintainer_file = 1;
-			WARN("FILE_PATH_CHANGES",
-			     "added, moved or deleted file(s), does MAINTAINERS need updating?\n" . $herecurr);
-		}
+#		if (!$reported_maintainer_file && !$in_commit_log &&
+#		    ($line =~ /^(?:new|deleted) file mode\s*\d+\s*$/ ||
+#		     $line =~ /^rename (?:from|to) [\w\/\.\-]+\s*$/ ||
+#		     ($line =~ /\{\s*([\w\/\.\-]*)\s*\=\>\s*([\w\/\.\-]*)\s*\}/ &&
+#		      (defined($1) || defined($2))))) {
+#			$is_patch = 1;
+#			$reported_maintainer_file = 1;
+#			WARN("FILE_PATH_CHANGES",
+#			     "added, moved or deleted file(s), does MAINTAINERS need updating?\n" . $herecurr);
+#		}
 
 # Check for adding new DT bindings not in schema format
 		if (!$in_commit_log &&
@@ -5975,12 +5975,12 @@ sub process {
 			virt_(?:$barrier_stems)
 		}x;
 
-		if ($line =~ /\b(?:$all_barriers)\s*\(/) {
-			if (!ctx_has_comment($first_line, $linenr)) {
-				WARN("MEMORY_BARRIER",
-				     "memory barrier without comment\n" . $herecurr);
-			}
-		}
+#		if ($line =~ /\b(?:$all_barriers)\s*\(/) {
+#			if (!ctx_has_comment($first_line, $linenr)) {
+#				WARN("MEMORY_BARRIER",
+#				     "memory barrier without comment\n" . $herecurr);
+#			}
+#		}
 
 		my $underscore_smp_barriers = qr{__smp_(?:$barrier_stems)}x;
 
@@ -6648,10 +6648,10 @@ sub process {
 		}
 
 # recommend kstrto* over simple_strto* and strict_strto*
-		if ($line =~ /\b((simple|strict)_(strto(l|ll|ul|ull)))\s*\(/) {
-			WARN("CONSIDER_KSTRTO",
-			     "$1 is obsolete, use k$3 instead\n" . $herecurr);
-		}
+#		if ($line =~ /\b((simple|strict)_(strto(l|ll|ul|ull)))\s*\(/) {
+#			WARN("CONSIDER_KSTRTO",
+#			     "$1 is obsolete, use k$3 instead\n" . $herecurr);
+#		}
 
 # check for __initcall(), use device_initcall() explicitly or more appropriate function please
 		if ($line =~ /^.\s*__initcall\s*\(/) {
