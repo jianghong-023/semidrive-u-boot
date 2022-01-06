@@ -246,6 +246,14 @@ config WDT_TANGIER
 	  Intel Tangier SoC. If you're using a board with Intel Tangier
 	  SoC, say Y here.
 
+config WDT_SEMIDRIVE
+	bool "semidrive watchdog timer support"
+	depends on WDT
+	help
+	  This enables support for watchdog controller available on
+	  semidrive SoC. If you're using a board with semidrive
+	  SoC, say Y here.
+
 config SPL_WDT
 	bool "Enable driver model for watchdog timer drivers in SPL"
 	depends on SPL_DM

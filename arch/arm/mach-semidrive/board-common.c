@@ -21,6 +21,7 @@
 #include <u-boot/crc.h>
 #include <dm/uclass.h>
 #include <dm/device.h>
+#include <wdt.h>
 
 #ifdef CONFIG_SPL_BUILD
 #include <debug_uart.h>
