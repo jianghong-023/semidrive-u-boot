@@ -7,6 +7,10 @@
 #include <common.h>
 #include <clk.h>
 #include <log.h>
+#ifdef CONFIG_SDRV_OSPI
+#include <asm/io.h>
+#include <wait_bit.h>
+#endif
 #include <asm-generic/io.h>
 #include <dm.h>
 #include <fdtdec.h>
@@ -18,12 +22,20 @@
 #include <linux/err.h>
 #include <linux/errno.h>
 #include <linux/sizes.h>
+#include <linux/kernel.h>
 #include "cadence_qspi.h"
 
 #define CQSPI_STIG_READ			0
 #define CQSPI_STIG_WRITE		1
 #define CQSPI_READ			2
 #define CQSPI_WRITE			3
+#ifdef CONFIG_SDRV_OSPI
+#define SDRV_OSPI_CS	0
+#define APB_OSPI1	0x30020000
+#define APB_OSPI2	0x306D0000
+#define OSPI1_CLKSRC	333000000
+#define OSPI2_CLKSRC	400000000
+#endif
 
 static int cadence_spi_write_speed(struct udevice *bus, uint hz)
 {
@@ -56,6 +68,27 @@ static int spi_calibration(struct udevice *bus, uint hz)
 {
 	struct cadence_spi_priv *priv = dev_get_priv(bus);
 	void *base = priv->regbase;
+#ifdef CONFIG_SDRV_OSPI
+	unsigned int idcode = 0;
+	int err = 0;
+	struct cadence_spi_plat *plat = dev_get_plat(bus);
+
+	cadence_spi_write_speed(bus, hz);
+
+	/* configure the read data capture delay register to 0 */
+	cadence_qspi_apb_readdata_capture(base, 1, 1);
+
+	/* Enable QSPI */
+	cadence_qspi_apb_controller_enable(base);
+
+	/* Set Chip select */
+	cadence_qspi_apb_chipselect(base, SDRV_OSPI_CS, plat->is_decoded_cs);
+
+	err = cadence_spi_read_id(base, 4, (u8 *)&idcode);
+
+	/* Disable QSPI for subsequent initialization */
+	cadence_qspi_apb_controller_disable(base);
+#else
 	unsigned int idcode = 0, temp = 0;
 	int err = 0, i, range_lo = -1, range_hi = -1;
 
@@ -120,6 +153,7 @@ static int spi_calibration(struct udevice *bus, uint hz)
 	cadence_qspi_apb_readdata_capture(base, 1, (range_hi + range_lo) / 2);
 	debug("SF: Read data capture delay calibrated to %i (%i - %i)\n",
 	      (range_hi + range_lo) / 2, range_lo, range_hi);
+#endif
 
 	/* just to ensure we do once only when speed or chip select change */
 	priv->qspi_calibrated_hz = hz;
@@ -167,12 +201,22 @@ static int cadence_spi_probe(struct udevice *bus)
 {
 	struct cadence_spi_plat *plat = dev_get_plat(bus);
 	struct cadence_spi_priv *priv = dev_get_priv(bus);
+#ifndef CONFIG_SDRV_OSPI
 	struct clk clk;
 	int ret;
+#endif
 
 	priv->regbase = plat->regbase;
 	priv->ahbbase = plat->ahbbase;
 
+#ifdef CONFIG_SDRV_OSPI
+	if (plat->ref_clk_hz == 0) {
+		if ((u32)(plat->regbase) == APB_OSPI1)
+			plat->ref_clk_hz = OSPI1_CLKSRC;
+		else if ((u32)(plat->regbase) == APB_OSPI2)
+			plat->ref_clk_hz = OSPI2_CLKSRC;
+	}
+#else
 	if (plat->ref_clk_hz == 0) {
 		ret = clk_get_by_index(bus, 0, &clk);
 		if (ret) {
@@ -194,6 +238,7 @@ static int cadence_spi_probe(struct udevice *bus)
 		dev_warn(bus, "Can't get reset: %d\n", ret);
 	else
 		reset_deassert_bulk(&priv->resets);
+#endif
 
 	if (!priv->qspi_is_init) {
 		cadence_qspi_apb_controller_init(plat);
@@ -328,8 +373,19 @@ static int cadence_spi_of_to_plat(struct udevice *bus)
 	return 0;
 }
 
+static int cadence_spi_adjust_op_size(struct spi_slave *slave, struct spi_mem_op *op)
+{
+	struct udevice *bus = slave->dev->parent;
+	struct cadence_spi_plat *plat = dev_get_plat(bus);
+
+	op->data.nbytes = min(op->data.nbytes, plat->page_size);
+
+	return 0;
+}
+
 static const struct spi_controller_mem_ops cadence_spi_mem_ops = {
 	.exec_op = cadence_spi_mem_exec_op,
+	.adjust_op_size = cadence_spi_adjust_op_size,
 };
 
 static const struct dm_spi_ops cadence_spi_ops = {

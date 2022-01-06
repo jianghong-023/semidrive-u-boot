@@ -57,6 +57,8 @@ void cadence_qspi_apb_controller_enable(void *reg_base_addr);
 void cadence_qspi_apb_controller_disable(void *reg_base_addr);
 void cadence_qspi_apb_dac_mode_enable(void *reg_base);
 
+void cadence_qspi_reset(void *reg_base);
+
 int cadence_qspi_apb_command_read(void *reg_base_addr,
 				  const struct spi_mem_op *op);
 int cadence_qspi_apb_command_write(void *reg_base_addr,
