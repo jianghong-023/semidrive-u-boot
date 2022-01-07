@@ -62,7 +62,7 @@ struct i2c_regs {
 	u32 comp_type;
 };
 
-#define IC_CLK			24000000
+#define IC_CLK			166666666
 #define NANO_TO_KILO		1000000
 
 /* High and low times in different speed modes (in ns) */

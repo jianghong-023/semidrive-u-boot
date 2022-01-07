@@ -17,6 +17,7 @@
 #include "designware_i2c.h"
 #include <dm/device_compat.h>
 #include <linux/err.h>
+
 /*
  * This assigned unique hex value is constant and is derived from the two ASCII
  * letters 'DW' followed by a 16-bit unsigned number
@@ -735,7 +736,7 @@ static int designware_i2c_set_bus_speed(struct udevice *bus, unsigned int speed)
 	struct dw_i2c *i2c = dev_get_priv(bus);
 	ulong rate;
 
-#if CONFIG_IS_ENABLED(D9_I2C_CLK)
+#if CONFIG_IS_ENABLED(CLK)
 	rate = clk_get_rate(&i2c->clk);
 	if (IS_ERR_VALUE(rate))
 		return log_ret(-EINVAL);
@@ -764,6 +765,7 @@ static int designware_i2c_probe_chip(struct udevice *bus, uint chip_addr,
 int designware_i2c_of_to_plat(struct udevice *bus)
 {
 	struct dw_i2c *priv = dev_get_priv(bus);
+	int ret;
 
 	if (!priv->regs)
 		priv->regs = dev_read_addr_ptr(bus);
@@ -771,8 +773,6 @@ int designware_i2c_of_to_plat(struct udevice *bus)
 	dev_read_u32(bus, "i2c-scl-falling-time-ns", &priv->scl_fall_time_ns);
 	dev_read_u32(bus, "i2c-sda-hold-time-ns", &priv->sda_hold_time_ns);
 
-#if CONFIG_IS_ENABLED(D9_I2C_CLK)
-	int ret;
 	ret = reset_get_bulk(bus, &priv->resets);
 	if (ret) {
 		if (ret != -ENOTSUPP)
@@ -781,6 +781,7 @@ int designware_i2c_of_to_plat(struct udevice *bus)
 		reset_deassert_bulk(&priv->resets);
 	}
 
+#if CONFIG_IS_ENABLED(CLK)
 	ret = clk_get_by_index(bus, 0, &priv->clk);
 	if (ret)
 		return ret;
@@ -807,6 +808,7 @@ int designware_i2c_probe(struct udevice *bus)
 			comp_type);
 		return -ENXIO;
 	}
+
 	log_debug("I2C bus %s version %#x\n", bus->name,
 		  readl(&priv->regs->comp_version));
 
