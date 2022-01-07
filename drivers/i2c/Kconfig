@@ -14,6 +14,15 @@ config DM_I2C
 	  device (bus child) info is kept as parent plat. The interface
 	  is defined in include/i2c.h.
 
+config SDRV_I2C_USE_DEF_CLK
+        bool "Use Default CLK"
+        depends on DM_I2C
+        help
+	  If the clock module does not support this
+	  function, it needs to be turned on.
+	  If this flag is turned on, the default 24MHz
+	  clock will be used.
+
 config SPL_DM_I2C
 	bool "Enable Driver Model for I2C drivers in SPL"
 	depends on SPL_DM && DM_I2C

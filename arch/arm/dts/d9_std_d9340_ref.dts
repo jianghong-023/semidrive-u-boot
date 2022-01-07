@@ -336,24 +336,6 @@
 };
 
 
-&spi2 {
-//this belong to safety domain, not handover now.
-	status = "disabled";
-};
-
-&spi5 {
-//sch core part U1502(IS62WVS5128GBL)
-	status = "okay";
-};
-
-&spi6 {
-	status = "disabled";
-};
-
-&spi7 {
-	status = "disabled";
-};
-
 &uart15 {
 //linux debug
 	dmas = <&dmac4 X9_DMA_SLV_ID_UART15_TX>, <&dmac4 X9_DMA_SLV_ID_UART15_RX>;
@@ -595,6 +577,24 @@
 		block-size = <12>;
 		status = "disabled";
 	};
+};
+
+&spi2 {
+//this belong to safety domain, not handover now.
+	status = "disabled";
+};
+
+&spi5 {
+	status = "disabled";
+};
+
+&spi6 {
+//sch core part U1502(IS62WVS5128GBL)
+	status = "okay";
+};
+
+&spi7 {
+	status = "disabled";
 };
 
 &mbox {

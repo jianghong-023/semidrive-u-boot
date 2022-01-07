@@ -737,9 +737,14 @@ static int designware_i2c_set_bus_speed(struct udevice *bus, unsigned int speed)
 	ulong rate;
 
 #if CONFIG_IS_ENABLED(CLK)
-	rate = clk_get_rate(&i2c->clk);
-	if (IS_ERR_VALUE(rate))
-		return log_ret(-EINVAL);
+	#if CONFIG_IS_ENABLED(SDRV_I2C_USE_DEF_CLK)
+		rate = IC_CLK;
+	#else
+		rate = clk_get_rate(&i2c->clk);
+		if (IS_ERR_VALUE(rate))
+			return log_ret(-EINVAL);
+	#endif
+
 #else
 	rate = IC_CLK;
 #endif
@@ -781,7 +786,7 @@ int designware_i2c_of_to_plat(struct udevice *bus)
 		reset_deassert_bulk(&priv->resets);
 	}
 
-#if CONFIG_IS_ENABLED(CLK)
+#if CONFIG_IS_ENABLED(CLK) && !CONFIG_IS_ENABLED(SDRV_I2C_USE_DEF_CLK)
 	ret = clk_get_by_index(bus, 0, &priv->clk);
 	if (ret)
 		return ret;
