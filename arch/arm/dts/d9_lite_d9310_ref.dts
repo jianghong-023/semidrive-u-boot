@@ -20,23 +20,23 @@
 	compatible = "semidrive,kunlun";
 
 	aliases {
-		serial0 = &uart14;
-		serial1 = &uart0;
-		serial2 = &uart1;
-		//serial3 = &uart2;//safety debug uart
-		serial4 = &uart3;
-		serial5 = &uart4;
-		serial6 = &uart5;
-		serial7 = &uart6; /* no use */
-		serial8 = &uart7; /* no use */
-		serial9 = &uart8;
-		//serial10 = &uart9;//sec ssystem debug uart
-		serial11 = &uart10;
-		serial12 = &uart11;
-		serial13 = &uart12;
-		serial14 = &uart13;
-		//serial15 = &uart14;//linux debug uart
-		serial16 = &uart15;
+		serial0 = &uart15;
+		serial1 = &uart1;
+		serial2 = &uart2;
+		//serial3 = &uart3;//safety debug uart
+		serial4 = &uart4;
+		serial5 = &uart5;
+		serial6 = &uart6;
+		serial7 = &uart7; /* no use */
+		serial8 = &uart8; /* no use */
+		serial9 = &uart9;
+		//serial10 = &uart10;//sec ssystem debug uart
+		serial11 = &uart11;
+		serial12 = &uart12;
+		serial13 = &uart13;
+		serial14 = &uart14;
+		//serial15 = &uart15;//linux debug uart
+		serial16 = &uart16;
 		ethernet1 = &ethernet1;
 		ethernet2 = &ethernet2;
 	};
@@ -336,7 +336,8 @@
 
 
 &spi2 {
-	status = "okay";
+//this belong to safety domain, not handover now.
+	status = "disabled";
 };
 
 &spi5 {
@@ -352,19 +353,19 @@
 	status = "disabled";
 };
 
-&uart14 {
+&uart15 {
 //linux debug
 	dmas = <&dmac4 X9_DMA_SLV_ID_UART15_TX>, <&dmac4 X9_DMA_SLV_ID_UART15_RX>;
 	dma-names = "tx", "rx";
 	status = "okay";
 };
 
-&uart0 {
+&uart1 {
 //xm1 --need flip
 	status = "disabled";
 };
 
-&uart1 {
+&uart2 {
 //rs485
 //sch part u28 sit3485
 	snps,dma-not-used;
@@ -384,57 +385,57 @@
 	status = "okay";
 };
 
-//&uart2 {
+//&uart3 {
 //saf debug uart,we not use for ever
 //	status = "disabled";
 //};
-
-&uart3 {
-	status = "disabled";
-};
 
 &uart4 {
 	status = "disabled";
 };
 
 &uart5 {
+	status = "disabled";
+};
+
+&uart6 {
 //rs232
 //sch part u29 sit3232
 	snps,dma-not-used;
 	status = "okay";
 };
 
-&uart8 {
+&uart9 {
 //sch part xm1 --need flip
 	status = "disabled";
 };
 
-&uart9 {
+&uart10 {
 //sec debug
 	status = "disabled";
 };
 
-&uart10 {
-	status = "disabled";
-};
-
 &uart11 {
-//sch part xm7 --need flip
 	status = "disabled";
 };
 
 &uart12 {
-//sch part xm5 --need flip
+//sch part xm7 --need flip
 	status = "disabled";
 };
 
 &uart13 {
+//sch part xm5 --need flip
+	status = "disabled";
+};
+
+&uart14 {
 //sch part xm6 --need flip
 	status = "disabled";
 };
 
 
-&uart15 {
+&uart16 {
 //sch part xm8 --need flip
 	status = "disabled";
 };

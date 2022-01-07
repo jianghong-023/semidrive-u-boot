@@ -47,7 +47,7 @@
 			status = "disabled";
 		};
 
-		uart0: serial@300f0000 {
+		uart1: serial@300f0000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0 0x300f0000 0 0x100>;
 			reg-shift=<2>;
@@ -59,7 +59,7 @@
 			status = "disabled";
 		};
 
-		uart1: serial@30100000 {
+		uart2: serial@30100000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0 0x30100000 0 0x100>;
 			reg-shift=<2>;
@@ -71,7 +71,7 @@
 			status = "disabled";
 		};
 
-		uart3: serial@30120000 {
+		uart4: serial@30120000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0 0x30120000 0 0x100>;
 			reg-shift=<2>;
@@ -83,7 +83,7 @@
 			status = "disabled";
 		};
 
-		uart4: serial@30130000 {
+		uart5: serial@30130000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0 0x30130000 0 0x100>;
 			reg-shift=<2>;
@@ -95,7 +95,7 @@
 			status = "disabled";
 		};
 
-		uart5: serial@30140000 {
+		uart6: serial@30140000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0 0x30140000 0 0x100>;
 			reg-shift=<2>;
@@ -107,7 +107,7 @@
 			status = "disabled";
 		};
 
-		uart6: serial@30150000 {
+		uart7: serial@30150000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0 0x30150000 0 0x100>;
 			reg-shift=<2>;
@@ -119,7 +119,7 @@
 			status = "disabled";
 		};
 
-		uart7: serial@30160000 {
+		uart8: serial@30160000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0 0x30160000 0 0x100>;
 			reg-shift=<2>;
@@ -131,7 +131,7 @@
 			status = "disabled";
 		};
 
-		uart8: serial@304c0000 {
+		uart9: serial@304c0000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0 0x304c0000 0 0x100>;
 			reg-shift=<2>;
@@ -143,7 +143,7 @@
 			status = "disabled";
 		};
 
-		uart9: serial@304d0000 {
+		uart10: serial@304d0000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0 0x304d0000 0 0x100>;
 			reg-shift=<2>;
@@ -155,7 +155,7 @@
 			status = "disabled";
 		};
 
-		uart10: serial@304e0000 {
+		uart11: serial@304e0000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0 0x304e0000 0 0x100>;
 			reg-shift=<2>;
@@ -167,7 +167,7 @@
 			status = "disabled";
 		};
 
-		uart11: serial@304f0000 {
+		uart12: serial@304f0000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0 0x304f0000 0 0x100>;
 			reg-shift=<2>;
@@ -179,7 +179,7 @@
 			status = "disabled";
 		};
 
-		uart12: serial@30500000 {
+		uart13: serial@30500000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0 0x30500000 0 0x100>;
 			reg-shift=<2>;
@@ -191,7 +191,7 @@
 			status = "disabled";
 		};
 
-		uart13: serial@30510000 {
+		uart14: serial@30510000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0 0x30510000 0 0x100>;
 			reg-shift=<2>;
@@ -203,7 +203,7 @@
 			status = "disabled";
 		};
 
-		uart14: serial@30520000 {
+		uart15: serial@30520000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0 0x30520000 0 0x100>;
 			reg-shift=<2>;
@@ -215,7 +215,7 @@
 			status = "disabled";
 		};
 
-		uart15: serial@30530000 {
+		uart16: serial@30530000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0 0x30530000 0 0x100>;
 			reg-shift=<2>;
