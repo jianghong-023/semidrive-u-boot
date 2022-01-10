@@ -24,7 +24,7 @@ export OBJCOPY=${CROSS_COMPILE}objcopy
 export OBJDUMP=${CROSS_COMPILE}objdump
 export LOCALVERSION=""
 
-make d9_std_defconfig
-#make d9_lite_defconfig
-#make d9_plus_ap1_defconfig
+make d9_defconfig
+#make d9lite_defconfig
+#make d9plus_ap1_defconfig
 make -j8
