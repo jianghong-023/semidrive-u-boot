@@ -217,8 +217,43 @@ static int semidrive_wdt_start(struct udevice *dev, u64 time_out, ulong flags)
 static int sdrv_wdt_is_running(struct semidrive_wdt_priv *sdrv_wdt)
 {
 	void __iomem *wdt_ctl = sdrv_wdt->base;
+
 	return !!((readl(wdt_ctl) & WDG_CTRL_WDG_EN_STA_MASK)
 			&& (readl(wdt_ctl + 0x4) != readl(wdt_ctl + 0x1c)));
+}
+
+static int sdrv_wdt_stop(struct udevice *dev)
+{
+	unsigned int val;
+	struct semidrive_wdt_priv *sdrv_wdt = dev_get_priv(dev);
+	void __iomem *wdt_ctl = sdrv_wdt->base;
+
+	if (!sdrv_wdt_is_running(sdrv_wdt))
+		return 0;
+
+	val = readl(wdt_ctl);
+
+	val &= ~WDG_CTRL_WDG_EN_MASK;
+	writel(val, wdt_ctl);
+
+	while (readl(wdt_ctl) & WDG_CTRL_WDG_EN_STA_MASK)
+		;
+
+	return 0;
+}
+
+static int sdrv_wdt_refresh(struct udevice *dev)
+{
+	void __iomem *wdt_ctl, *wdt_wrc_ctl;
+	unsigned int val;
+	struct semidrive_wdt_priv *sdrv_wdt = dev_get_priv(dev);
+
+	wdt_ctl = sdrv_wdt->base;
+	wdt_wrc_ctl = wdt_ctl + 8;
+	val = readl(wdt_wrc_ctl);
+	val |= WDG_WRC_CTRL_REFR_TRIG_MASK;
+	writel(val, wdt_wrc_ctl);
+	return 0;
 }
 
 #define BOOT_REASON_ADDRESS  0x38418000
@@ -248,6 +283,7 @@ void sdrv_restart_without_reason(struct udevice *dev)
 
 	if (!sdrv_wdt_is_running(sdrv_wdt)) {
 		/* run watchdog, and don't kick it */
+		pr_debug("restart machine\n");
 		flush_dcache_all();
 		semidrive_wdt_start(dev,0,0);
 	} else {
@@ -261,7 +297,7 @@ int sdrv_restart(struct udevice *dev, ulong flags)
 	sdrv_set_bootreason(dev);
 	sdrv_restart_without_reason(dev);
 
-        return 0;
+	return 0;
 }
 
 static int semidrive_wdt_probe(struct udevice *dev)
@@ -306,6 +342,9 @@ static int semidrive_wdt_probe(struct udevice *dev)
 }
 
 static const struct wdt_ops semidrive_wdt_ops = {
+	.start = semidrive_wdt_start,
+	.stop = sdrv_wdt_stop,
+	.reset = sdrv_wdt_refresh,
 	.expire_now = sdrv_restart,
 };
 
