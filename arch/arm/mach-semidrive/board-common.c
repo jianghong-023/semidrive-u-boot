@@ -34,6 +34,49 @@
 #include <asm/psci.h>
 #include <fastboot.h>
 #endif
+#ifdef CONFIG_SPL_MMC_SUPPORT
+#include <mmc.h>
+#include <emmc_partitions.h>
+#endif
+#ifdef CONFIG_TARGET_D9LITE_REF
+#include <dt-bindings/memmap/d9lite/projects/default/image_cfg.h>
+#elif CONFIG_TARGET_D9PLUS_AP1_REF
+#include <dt-bindings/memmap/d9plus/projects/default/image_cfg.h>
+#elif CONFIG_TARGET_D9PLUS_AP2_REF
+#include <dt-bindings/memmap/d9plus/projects/default/image_cfg.h>
+#else
+#include <dt-bindings/memmap/d9/projects/default/image_cfg.h>
+#endif
+
+#ifdef CONFIG_TARGET_D9LITE_REF
+#define AP_ATF_MEMBASE AP2_ATF_MEMBASE
+#elif CONFIG_TARGET_D9PLUS_AP1_REF
+#define AP_ATF_MEMBASE AP1_ATF_MEMBASE
+#else
+#define AP_ATF_MEMBASE AP1_ATF_MEMBASE
+#endif
+
+#if defined(CONFIG_TARGET_D9PLUS_AP1_REF) || defined(CONFIG_TARGET_D9PLUS_AP2_REF)
+#define IMG_BACKUP_LOW_BASE (DIL_IMAGES_MEMBASE + 0x10000000)
+#define IMG_BACKUP_LOW_SIZE DIL_IMAGES_MEMSIZE
+#define IMG_BACKUP_HIGH_BASE AP2_IMAGES_MEMBASE
+#define IMG_BACKUP_HIGH_SIZE AP2_IMAGES_MEMSIZE
+#define AP2_KERNEL_UIMAGE_MEMBASE (AP2_KERNEL_MEMBASE + 0x2000000)
+
+#define IMG_BACKUP_MEMSEEK_SZ 0x440
+#define IMG_BACKUP_PRELOADER_SZ 0x100000
+#define IMG_BACKUP_BOOTLOADER_SZ 0x200000
+#define IMG_BACKUP_ATF_SZ 0x20000
+#define IMG_BACKUP_DTB_SZ 0x80000
+#define IMG_BACKUP_KERNEL_SZ 0x1800000
+#define IMG_BACKUP_RAMDISK_SZ 0x4000000
+#define IMG_BACKUP_PRELOADER_OFF (IMG_BACKUP_LOW_BASE + IMG_BACKUP_MEMSEEK_SZ)
+#define IMG_BACKUP_ATF_OFF (IMG_BACKUP_HIGH_BASE + IMG_BACKUP_MEMSEEK_SZ)
+#define IMG_BACKUP_BOOTLOADER_OFF (IMG_BACKUP_ATF_OFF + IMG_BACKUP_ATF_SZ)
+#define IMG_BACKUP_DTB_OFF (IMG_BACKUP_BOOTLOADER_OFF + IMG_BACKUP_BOOTLOADER_SZ)
+#define IMG_BACKUP_KERNEL_OFF (IMG_BACKUP_DTB_OFF + IMG_BACKUP_DTB_SZ)
+#define IMG_BACKUP_RAMDISK_OFF (IMG_BACKUP_KERNEL_OFF + IMG_BACKUP_KERNEL_SZ)
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -144,22 +187,238 @@ int cleanup_before_boot_other(void)
 	return 0;
 }
 
+#ifdef CONFIG_SPL_MMC_SUPPORT
+int spl_part_load(struct mmc *mmc, char *part_name, void *addr, u64 size)
+{
+	struct partitions *part;
+	u64 blk, cnt, n;
+
+	if (!mmc || !part_name || !addr)
+		return -EINVAL;
+
+	part = find_mmc_partition_by_name(part_name);
+	if (!part) {
+		pr_err("part get fail\n");
+		return -EINVAL;
+	}
+	blk = part->offset;
+	cnt = part->size;
+	if (size)
+		cnt = (size + mmc->read_bl_len - 1) / mmc->read_bl_len;
+	if (cnt > part->size)
+		cnt = part->size;
+
+	pr_debug("part: blk = %x, cnt = %x\n", blk, cnt);
+
+	n = blk_dread(mmc_get_blk_desc(mmc), blk, cnt, addr);
+	if (n != cnt) {
+		pr_err("mmc read %s fail!\n", part_name);
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+int spl_load_ap(struct mmc *mmc)
+{
+	struct partitions *part;
+	void *addr;
+	int ret = 0;
+
+	if (!mmc)
+		return -ENODEV;
+
+	addr = (void *)AP_ATF_MEMBASE;
+	ret = spl_part_load(mmc, "atf_a", addr, 0);
+	if (ret) {
+		pr_err("atf part read fail\n");
+		return -EINVAL;
+	}
+
+	addr = (void *)CONFIG_SYS_TEXT_BASE;
+	ret = spl_part_load(mmc, "bootloader_a", addr, 0);
+	if (ret) {
+		pr_err("bootloader part read fail\n");
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+#ifdef CONFIG_TARGET_D9PLUS_AP1_REF
+int spl_load_ap2(struct mmc *mmc)
+{
+	struct partitions *part;
+	void *addr;
+	int ret = 0, fmt = 0;
+
+	if (!mmc)
+		return -ENODEV;
+
+	addr = (void *)IMG_BACKUP_PRELOADER_OFF;
+	ret = spl_part_load(mmc, "cluster_preloader_a", addr, IMG_BACKUP_PRELOADER_SZ);
+	if (ret) {
+		pr_err("ap2_preloader part read fail\n");
+		return -EINVAL;
+	}
+
+	addr = (void *)IMG_BACKUP_ATF_OFF;
+	ret = spl_part_load(mmc, "cluster_atf_a", addr, IMG_BACKUP_ATF_SZ);
+	if (ret) {
+		pr_err("ap2_atf part read fail\n");
+		return -EINVAL;
+	}
+
+	addr = (void *)IMG_BACKUP_BOOTLOADER_OFF;
+	ret = spl_part_load(mmc, "cluster_bootloader_a", addr, IMG_BACKUP_PRELOADER_SZ);
+	if (ret) {
+		pr_err("ap2_bootloader part read fail\n");
+		return -EINVAL;
+	}
+
+	addr = (void *)IMG_BACKUP_KERNEL_OFF;
+	ret = spl_part_load(mmc, "cluster_kernel_a", addr, IMG_BACKUP_KERNEL_SZ);
+	if (ret) {
+		pr_err("ap2_kernel part read fail\n");
+		return -EINVAL;
+	}
+	fmt = genimg_get_format((void *)IMG_BACKUP_KERNEL_OFF);
+	printf("fmt = %d\n", fmt);
+
+	if (fmt != IMAGE_FORMAT_FIT) {
+		addr = (void *)IMG_BACKUP_DTB_OFF;
+		ret = spl_part_load(mmc, "cluster_dtb_a", addr, IMG_BACKUP_DTB_SZ);
+		if (ret) {
+			pr_err("ap2_dtb part read fail\n");
+			return -EINVAL;
+		}
+
+		addr = (void *)IMG_BACKUP_RAMDISK_OFF;
+		ret = spl_part_load(mmc, "cluster_ramdisk_a", addr, IMG_BACKUP_RAMDISK_SZ);
+		if (ret) {
+			pr_err("ap2_ramdisk part read fail\n");
+			return -EINVAL;
+		}
+	}
+
+	addr = (void *)IMG_BACKUP_PRELOADER_OFF;
+	memcpy((void *)AP2_PRELOADER_MEMBASE, addr, IMG_BACKUP_PRELOADER_SZ);
+
+	return 0;
+}
+#endif
+
+#ifdef CONFIG_SPL_MMC_SUPPORT
+int spl_emmc_load_image(int dev_num)
+{
+	struct mmc *mmc;
+	struct blk_desc *mmc_dev;
+	int ret = 0;
+
+	mmc_initialize(NULL);
+
+	mmc = find_mmc_device(dev_num);
+	if (!mmc) {
+		pr_err("no mmc device at slot\n");
+		return -ENODEV;
+	}
+
+	mmc_dev = blk_get_devnum_by_type(IF_TYPE_MMC, dev_num);
+	if (!mmc_dev || mmc_dev->type == DEV_TYPE_UNKNOWN) {
+		pr_err("mmc blk_dev get fail\n");
+		return -ENODEV;
+	}
+
+	ret = spl_load_ap(mmc);
+	if (ret) {
+		pr_err("spl load AP1 fail\n");
+		return -EINVAL;
+	}
+#ifdef CONFIG_TARGET_D9PLUS_AP1_REF
+	ret = spl_load_ap2(mmc);
+	if (ret) {
+		pr_err("spl load AP2 backup fail\n");
+		return -EINVAL;
+	}
+#endif
+
+	return 0;
+}
+#endif
+#endif
+
+#ifdef CONFIG_TARGET_D9PLUS_AP2_REF
+int spl_ap2_run(void)
+{
+	void *addr;
+	int ret = 0, fmt = 0;
+
+	addr = (void *)IMG_BACKUP_ATF_OFF;
+	memcpy((void *)AP2_ATF_MEMBASE, addr, IMG_BACKUP_ATF_SZ);
+
+	addr = (void *)IMG_BACKUP_BOOTLOADER_OFF;
+	memcpy((void *)AP2_BOOTLOADER_MEMBASE, addr, IMG_BACKUP_BOOTLOADER_SZ);
+
+	fmt = genimg_get_format((void *)IMG_BACKUP_KERNEL_OFF);
+	printf("fmt = %d\n", fmt);
+
+	if (fmt == IMAGE_FORMAT_FIT) {
+		addr = (void *)IMG_BACKUP_KERNEL_OFF;
+		memcpy((void *)AP2_KERNEL_UIMAGE_MEMBASE, addr, IMG_BACKUP_KERNEL_SZ);
+	} else {
+		addr = (void *)IMG_BACKUP_DTB_OFF;
+		memcpy((void *)AP2_REE_MEMBASE, addr, IMG_BACKUP_DTB_SZ);
+
+		addr = (void *)IMG_BACKUP_KERNEL_OFF;
+		memcpy((void *)AP2_KERNEL_MEMBASE, addr, IMG_BACKUP_KERNEL_SZ);
+
+		addr = (void *)IMG_BACKUP_RAMDISK_OFF;
+		memcpy((void *)AP2_BOARD_RAMDISK_MEMBASE, addr, IMG_BACKUP_RAMDISK_SZ);
+	}
+
+	return 0;
+}
+#endif
+
 typedef void (*bl31_entry_t)(uintptr_t bl32_entry,
 		uintptr_t bl33_entry, uintptr_t fdt_addr);
 
 void board_init_r(gd_t *id, ulong dest_addr)
 {
-	bl31_entry_t atf_entry = (bl31_entry_t)CONFIG_ECO_ATF_MEMBASE;
+	bl31_entry_t atf_entry;
 
-	cleanup_before_boot_other();
+	/* set this addr for reserve 32k buffer for pagetab */
+	gd->relocaddr = CONFIG_SPL_BSS_START_ADDR;
+
+	arch_reserve_mmu();
+
+	/* Enable caches */
+	enable_caches();
+
+#ifndef CONFIG_TARGET_D9PLUS_AP2_REF
+	atf_entry = (bl31_entry_t)AP_ATF_MEMBASE;
+#else
+	/* atf_entry = (bl31_entry_t)AP2_BOOTLOADER_MEMBASE; */
+	atf_entry = (bl31_entry_t)AP2_ATF_MEMBASE;
+#endif
+
+#ifndef CONFIG_TARGET_D9PLUS_AP2_REF
+	spl_emmc_load_image(0);
+#else
+	spl_ap2_run();
+	/* atf_entry(0, 0, 0); */
+#endif
 
 	/* Jump atf */
-	puts("Jump atf\n");
+	pr_debug("Jump atf: %x %x 0\n", atf_entry, CONFIG_SYS_TEXT_BASE);
 	/* Be careful, Now we are in el3 mode
 	 * so can jump secure monitor derectly, when change the exception mode
 	 * of spl,we only can use smc instruction to switch to el3.
 	 */
+	cleanup_before_boot_other();
+
 	atf_entry(0, CONFIG_SYS_TEXT_BASE, 0);
+
 	while (1)
 		;
 }

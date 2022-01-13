@@ -19,7 +19,7 @@
 	compatible = "semidrive,kunlun";
 
 	aliases {
-		serial0 = &uart9;
+		serial0 = &uart10;
 	};
 
 	memory@50000000 {
@@ -89,7 +89,7 @@
 	status = "okay";
 };
 
-&uart9 {
+&uart10 {
 	dmas = <&dmac3 X9_DMA_SLV_ID_UART10_TX>, <&dmac3 X9_DMA_SLV_ID_UART10_RX>;
 	dma-names = "tx", "rx";
 	status = "okay";

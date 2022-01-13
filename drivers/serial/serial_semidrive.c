@@ -97,10 +97,9 @@ static void _semidrive_serial_setbrg(struct semidrive_priv *priv, int baud)
 	int quot;
 	int frac;
 
-	quot = DIV_ROUND_CLOSEST(CONFIG_DEBUG_UART_CLOCK,
-					 mode_x_div * baud);
+	quot = DIV_ROUND_CLOSEST(priv->clock, mode_x_div * baud);
 
-	frac = ((CONFIG_DEBUG_UART_CLOCK / ((baud * 16) / 1000)) -
+	frac = ((priv->clock / ((baud * 16) / 1000)) -
 		(quot * 1000));
 
 	/* set divisor */

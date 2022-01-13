@@ -365,10 +365,12 @@ static void boot_jump_linux(bootm_headers_t *images, int flag)
 #ifdef CONFIG_ARMV8_SWITCH_TO_EL1
 
 #ifdef CONFIG_ARCH_SEMIDRIVE
+#ifndef CONFIG_TARGET_D9PLUS_AP2_REF
 #include <linux/arm-smccc.h>
 		#define SMC_DIS_HCE   (0xc4000021)
 		struct arm_smccc_res res;
 			arm_smccc_smc(SMC_DIS_HCE, 0, 0, 0, 0, 0, 0, 0, &res);
+#endif
 #endif
 
 		armv8_switch_to_el2((u64)images->ft_addr, 0, 0, 0,

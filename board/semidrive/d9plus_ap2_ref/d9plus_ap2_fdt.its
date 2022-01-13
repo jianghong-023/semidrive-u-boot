@@ -31,6 +31,24 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
+			load = <0x85E00000>;
+			entry = <0x85E00000>;
+			hash-1 {
+				algo = "crc32";
+			};
+			hash-2 {
+				algo = "sha1";
+			};
+		};
+		ramdisk {
+			description = "Ramdisk for AP2";
+			data = /incbin/("./rootfs.img");
+			type = "ramdisk";
+			arch = "arm64";
+			os = "linux";
+			compression = "none";
+			load = <0x8DE00000>;
+			entry = <0x8DE00000>;
 			hash-1 {
 				algo = "crc32";
 			};
@@ -43,9 +61,10 @@
 	configurations {
 		default = "conf@1";
 		conf@1 {
-			description = "Boot Linux kernel with FDT blob";
+			description = "Boot Linux kernel with FDT blob and Ramdisk";
 			kernel = "kernel";
 			fdt = "fdt-1";
+			ramdisk = "ramdisk";
 			compatible = "d9plus_ap2_ref,safety_boot";
 		};
 		conf@2 {

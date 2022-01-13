@@ -31,6 +31,8 @@
 			type = "flat_dt";
 			arch = "arm64";
 			compression = "none";
+			load = <0x57200000>;
+			entry = <0x57200000>;
 			hash-1 {
 				algo = "crc32";
 			};

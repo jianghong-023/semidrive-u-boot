@@ -17,17 +17,14 @@
 	"stderr=" STDOUT_CFG "\0" \
 	"fdt_addr_r=0x85E00000\0" \
 	"kernel_addr_r=0x88080000\0" \
+	"ramdisk_addr_r=0x8DE00000\0" \
 	"kernel_comp_addr_r=0x89000000\0" \
 	"kernel_comp_size=0x1000000\0" \
 	"fdtfile=semidrive/" CONFIG_DEFAULT_DEVICE_TREE ".dtb\0" \
-	"load_kernel_dtb=mmc dev 0; mmc part_read dtb_a ${fdt_addr_r}\0" \
+	"load_kernel_dtb=\0" \
 	"mmc_boot=" \
-		"mmc dev 0; mmc part_read kernel_a ${kernel_addr_r};" \
 		"fdt addr ${fdt_addr_r};" \
-		"if test $? -ne 0; then " \
-			"mmc part_read dtb_a ${fdt_addr_r};" \
-		"fi;" \
-		"bootm ${kernel_addr_r}#conf@2 - ${fdt_addr_r}\0" \
+		"bootm ${kernel_addr_r}#conf@1 \0" \
 	"bootcmd=run mmc_boot;\0"
 #endif
 
