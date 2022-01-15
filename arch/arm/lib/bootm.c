@@ -363,6 +363,14 @@ static void boot_jump_linux(bootm_headers_t *images, int flag)
 		update_os_arch_secondary_cores(images->os.arch);
 
 #ifdef CONFIG_ARMV8_SWITCH_TO_EL1
+
+#ifdef CONFIG_ARCH_SEMIDRIVE
+#include <linux/arm-smccc.h>
+		#define SMC_DIS_HCE   (0xc4000021)
+		struct arm_smccc_res res;
+			arm_smccc_smc(SMC_DIS_HCE, 0, 0, 0, 0, 0, 0, 0, &res);
+#endif
+
 		armv8_switch_to_el2((u64)images->ft_addr, 0, 0, 0,
 				    (u64)switch_to_el1, ES_TO_AARCH64);
 #else
