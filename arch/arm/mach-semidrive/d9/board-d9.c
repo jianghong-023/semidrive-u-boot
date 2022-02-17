@@ -35,6 +35,14 @@ static struct mm_region d9_ref_mem_map[] = {
 		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
 			 PTE_BLOCK_INNER_SHARE
 	}, {
+		/* IO SPACE(OSPI AHB_MEM) */
+		.virt = 0x4000000UL,
+		.phys = 0x4000000UL,
+		.size = 0x8000000UL,	/* 128MB */
+		.attrs = PTE_BLOCK_MEMTYPE(MT_DEVICE_NGNRNE) |
+			 PTE_BLOCK_NON_SHARE |
+			 PTE_BLOCK_PXN | PTE_BLOCK_UXN
+	}, {
 		/* IO SPACE */
 		.virt = 0x30000000UL,
 		.phys = 0x30000000UL,

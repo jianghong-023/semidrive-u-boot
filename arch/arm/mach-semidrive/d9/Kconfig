@@ -16,7 +16,7 @@ config TARGET_D9LITE_REF
 	help
 	    d9lite_ref is a reference board for d9310 SoC chip
 
-config TARGET_d9PLUS_AP1_REF
+config TARGET_D9PLUS_AP1_REF
 	bool "d9-plus reference board for ap1 cluster"
 	help
 	    d9plus_ap1 is a reference board for ap1 cluter in

@@ -1130,6 +1130,7 @@ config CMD_MUX
 config CMD_NAND
 	bool "nand"
 	default y if NAND_SUNXI
+	default y if MTD_SPI_NAND
 	depends on MTD_RAW_NAND
 	help
 	  NAND support.
