@@ -36,7 +36,7 @@
 #endif
 #ifdef CONFIG_SPL_MMC_SUPPORT
 #include <mmc.h>
-#include <emmc_partitions.h>
+#include <sdrv/emmc_partitions.h>
 #endif
 #ifdef CONFIG_TARGET_D9LITE_REF
 #include <dt-bindings/memmap/d9lite/projects/default/image_cfg.h>

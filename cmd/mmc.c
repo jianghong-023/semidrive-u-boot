@@ -13,7 +13,7 @@
 #include <part.h>
 #include <sparse_format.h>
 #include <image-sparse.h>
-#include <emmc_partitions.h>
+#include <sdrv/emmc_partitions.h>
 
 static int curr_device = -1;
 
@@ -380,7 +380,7 @@ static int do_mmc_part_read(struct cmd_tbl *cmdtp, int flag,
 	if (argc > 4)
 		cnt = simple_strtoul(argv[4], NULL, 16);
 
-	if (blk > part->size)
+	if (blk >= part->size)
 		return CMD_RET_FAILURE;
 
 	if (!cnt || cnt > (part->size - blk))
@@ -550,7 +550,7 @@ static int do_mmc_part_write(struct cmd_tbl *cmdtp, int flag,
 	if (argc > 4)
 		cnt = simple_strtoul(argv[4], NULL, 16);
 
-	if (blk > part->size)
+	if (blk >= part->size)
 		return CMD_RET_FAILURE;
 
 	if (!cnt || cnt > (part->size - blk))
@@ -596,7 +596,7 @@ static int do_mmc_part_erase(struct cmd_tbl *cmdtp, int flag,
 	if (argc > 3)
 		cnt = simple_strtoul(argv[3], NULL, 16);
 
-	if (blk > part->size)
+	if (blk >= part->size)
 		return CMD_RET_FAILURE;
 
 	if (!cnt || cnt > (part->size - blk))
