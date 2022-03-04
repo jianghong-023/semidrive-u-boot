@@ -2,7 +2,7 @@
  * Semidrive X9 platform DMA slave id header file
  *
  * Copyright (C) 2019 Semidrive  Communications Inc.
- * This is slave id for dma mux,only for x9 chip platform.
+ * This is slave id for dma mux,only for x9 chip platform. 
  * This file is licensed under a dual GPLv2 or X11 license.
  */
 /*Next definition is for dma 35510000 ~ 35570000*/

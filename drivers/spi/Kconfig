@@ -123,12 +123,10 @@ config CADENCE_QSPI
 
 config SDRV_OSPI
 	bool "SDRV Cadence OSPI driver"
-	depends on CADENCE_QSPI
 	help
-	  Enable the Cadence OCTAL-SPI (OSPI) driver. Add ospi controller
-	  setting, adjust flash cfg operation. This driver can be used to
-	  access the SPI NOR flash on platforms embedding this Cadence IP
-	  core.
+	  Enable the Cadence OCTAL-SPI (OSPI) driver. This driver can be
+	  used to access the SPI NOR flash on platforms embedding this
+	  Cadence IP core.
 
 config CF_SPI
         bool "ColdFire SPI driver"
@@ -151,11 +149,8 @@ config DESIGNWARE_SPI
 
 config SDRV_DW_SPI
 	bool "SDRV Designware SPI driver"
-	depends on DESIGNWARE_SPI
 	help
-	  Enable the SDRV Designware SPI driver. This macro is used for
-	  separation when compatibility configurations related to the Semidrive
-	  SPI controller need to be adapted. This driver can be used to
+	  Enable the SDRV Designware SPI driver. This driver can be used to
 	  access the SPI Transfer data on platforms embedding this Designware
 	  IP core.
 

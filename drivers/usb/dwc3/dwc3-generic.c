@@ -394,7 +394,6 @@ static int dwc3_glue_probe(struct udevice *dev)
 	struct udevice *child = NULL;
 	int index = 0;
 	int ret;
-
 	glue->regs = dev_read_addr(dev);
 
 	ret = dwc3_glue_clk_init(dev, glue);
@@ -450,6 +449,7 @@ static const struct udevice_id dwc3_glue_ids[] = {
 	{ .compatible = "rockchip,rk3399-dwc3" },
 	{ .compatible = "qcom,dwc3" },
 	{ .compatible = "intel,tangier-dwc3" },
+	{ .compatible = "semidrive,dwc3" },
 	{ }
 };
 

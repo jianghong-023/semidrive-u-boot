@@ -479,7 +479,7 @@ scripts_basic:
 	$(Q)rm -f .tmp_quiet_recordmcount
 	$(Q)if [ -d "$(srctree)/.git/hooks" ];then \
 		cp $(srctree)/scripts/semidrive/pre-commit $(srctree)/.git/hooks; \
-		chmod +x $(srctree)/.git/hooks/*; \
+		chmod +x $(srctree)/.git/hooks/; \
 	fi
 
 # To avoid any implicit rule to kick in, define an empty command.
@@ -1993,7 +1993,7 @@ CLEAN_FILES += include/bmp_logo.h include/bmp_logo_data.h tools/version.h \
 MRPROPER_DIRS  += include/config include/generated spl tpl \
 		  .tmp_objdiff doc/output
 MRPROPER_FILES += .config .config.old include/autoconf.mk* include/config.h \
-		  ctags etags tags TAGS cscope* GPATH GTAGS GRTAGS GSYMS \
+		  \
 		  drivers/video/fonts/*.S
 
 # clean - Delete most, but leave enough to build external modules

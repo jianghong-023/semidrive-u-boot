@@ -33,8 +33,6 @@
 #define SDRV_OSPI_CS	0
 #define APB_OSPI1	0x30020000
 #define APB_OSPI2	0x306D0000
-#define OSPI1_CLKSRC	333000000
-#define OSPI2_CLKSRC	400000000
 #endif
 
 static int cadence_spi_write_speed(struct udevice *bus, uint hz)
@@ -68,10 +66,13 @@ static int spi_calibration(struct udevice *bus, uint hz)
 {
 	struct cadence_spi_priv *priv = dev_get_priv(bus);
 	void *base = priv->regbase;
+	unsigned int idcode = 0, temp = 0;
+	int err = 0, i, range_lo = -1, range_hi = -1;
 #ifdef CONFIG_SDRV_OSPI
-	unsigned int idcode = 0;
-	int err = 0;
 	struct cadence_spi_plat *plat = dev_get_plat(bus);
+
+	if (hz > 66000000)
+		printf("spi clk > 66M!\n");
 
 	cadence_spi_write_speed(bus, hz);
 
@@ -89,9 +90,6 @@ static int spi_calibration(struct udevice *bus, uint hz)
 	/* Disable QSPI for subsequent initialization */
 	cadence_qspi_apb_controller_disable(base);
 #else
-	unsigned int idcode = 0, temp = 0;
-	int err = 0, i, range_lo = -1, range_hi = -1;
-
 	/* start with slowest clock (1 MHz) */
 	cadence_spi_write_speed(bus, 1000000);
 
@@ -203,8 +201,8 @@ static int cadence_spi_probe(struct udevice *bus)
 	struct cadence_spi_priv *priv = dev_get_priv(bus);
 #ifndef CONFIG_SDRV_OSPI
 	struct clk clk;
-	int ret;
 #endif
+	int ret;
 
 	priv->regbase = plat->regbase;
 	priv->ahbbase = plat->ahbbase;
@@ -212,9 +210,9 @@ static int cadence_spi_probe(struct udevice *bus)
 #ifdef CONFIG_SDRV_OSPI
 	if (plat->ref_clk_hz == 0) {
 		if ((u32)(plat->regbase) == APB_OSPI1)
-			plat->ref_clk_hz = OSPI1_CLKSRC;
+			plat->ref_clk_hz = 333000000;
 		else if ((u32)(plat->regbase) == APB_OSPI2)
-			plat->ref_clk_hz = OSPI2_CLKSRC;
+			plat->ref_clk_hz = 400000000;
 	}
 #else
 	if (plat->ref_clk_hz == 0) {

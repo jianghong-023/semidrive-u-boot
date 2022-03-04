@@ -25,13 +25,13 @@
 #include <linux/list.h>
 #include <div64.h>
 #include "mmc_private.h"
-#include <sdrv/emmc_partitions.h>
+#include <emmc_partitions.h>
 
 #define DEFAULT_CMD6_TIMEOUT_MS  500
 
 static int mmc_set_signal_voltage(struct mmc *mmc, uint signal_voltage);
 
-bool is_partition_checked;
+bool is_partition_checked = false;
 #if !CONFIG_IS_ENABLED(DM_MMC)
 
 static int mmc_wait_dat0(struct mmc *mmc, int state, int timeout_us)

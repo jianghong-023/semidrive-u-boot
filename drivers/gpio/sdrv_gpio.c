@@ -2,7 +2,7 @@
 /*
  * Semidrive GPIO driver
  *
- * (C) Copyright 2021 shide.zhou@semidrive.com
+ * (C) Copyright 2021 zhoushide
  */
 
 #include <common.h>
@@ -13,7 +13,6 @@
 #include <asm/io.h>
 #include <dm/devres.h>
 #include <dm/device_compat.h>
-#include <dm/device-internal.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -46,7 +45,7 @@ struct sdrv_port {
 	unsigned int	idx;
 	unsigned int	ngpio;
 	unsigned int	gpio_ranges[4];
-	char name[32];
+	const char name[32];
 };
 
 struct sdrv_gpio_bank {
@@ -61,7 +60,7 @@ static int sdrv_gpio_direction_input(struct udevice *dev, unsigned int gpio)
 	int  bit_num = gpio % (port_priv->ngpio);
 	phys_addr_t reg = port_priv->base + GPIO_DIR_PORT_X(grp_idx);
 
-	debug("dir_reg is %llx,bit num is %d\n",reg, bit_num);
+	debug("dir_reg is %x,bit num is %d\n",reg, bit_num);
 
 	/* 0 is input */
 	clrbits_le32(reg, 1<<bit_num);
@@ -78,7 +77,7 @@ static int sdrv_gpio_direction_output(struct udevice *dev, unsigned gpio,
 	phys_addr_t dir_reg = port_priv->base + GPIO_DIR_PORT_X(grp_idx);
 	phys_addr_t out_reg = port_priv->base + GPIO_DATA_OUT_PORT_X(grp_idx);
 
-	debug("dir_reg is %llx,out_reg is %llx bit num is %d\n",dir_reg, out_reg, bit_num);
+	debug("dir_reg is %x,out_reg is %x bit num is %d\n",dir_reg, out_reg, bit_num);
 
 	/* 1 is output */
 	setbits_le32(dir_reg, 1<<bit_num);
@@ -127,7 +126,7 @@ static int sdrv_gpio_get_value(struct udevice *dev, unsigned gpio)
 	phys_addr_t in_reg = port_priv->base + GPIO_DATA_IN_PORT_X(grp_idx);
 	phys_addr_t out_reg = port_priv->base + GPIO_DATA_OUT_PORT_X(grp_idx);
 
-	debug("in_reg is %llx,bit num is %d\n",in_reg, bit_num);
+	debug("in_reg is %x,bit num is %d\n",in_reg, bit_num);
 
 	if (sdrv_gpio_get_function(dev, gpio) == GPIOF_OUTPUT)
 	    return (readl(out_reg) >> bit_num) & GPIO_IN_VALUE_MASK;
@@ -151,6 +150,8 @@ static int sdrv_gpio_probe(struct udevice *dev)
 
 static int sdrv_gpio_of_to_plat(struct udevice *dev)
 {
+	const void *fdt = gd->fdt_blob;
+	int node = dev_of_offset(dev);
 	struct gpio_dev_priv *uc_priv = dev_get_uclass_priv(dev);
 	struct sdrv_gpio_bank *gpio_bank = dev_get_priv(dev);
 	struct sdrv_port *port_priv;
@@ -204,7 +205,7 @@ static int sdrv_gpio_of_to_plat(struct udevice *dev)
 			return ret;
 	}
 
-	dev_dbg(dev, "bank_name is %s,ngpios is %d\n",uc_priv->bank_name,uc_priv->gpio_count);
+	printf("bank_name is %s,ngpios is %d\n",uc_priv->bank_name,uc_priv->gpio_count);
 
 	return 0;
 }

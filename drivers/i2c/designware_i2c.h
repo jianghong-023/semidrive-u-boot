@@ -62,12 +62,7 @@ struct i2c_regs {
 	u32 comp_type;
 };
 
-#if CONFIG_IS_ENABLED(SDRV_I2C_USE_DEF_CLK)
 #define IC_CLK			24000000
-#else
-#define IC_CLK			166666666
-#endif
-
 #define NANO_TO_KILO		1000000
 
 /* High and low times in different speed modes (in ns) */

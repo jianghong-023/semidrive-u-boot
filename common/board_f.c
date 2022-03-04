@@ -209,7 +209,7 @@ static int print_cpuinfo(void)
 
 static int announce_dram_init(void)
 {
-	puts("DRAM:  ");
+	puts("DRAM:dd  ");
 	return 0;
 }
 
@@ -320,6 +320,9 @@ __weak ulong board_get_usable_ram_top(ulong total_size)
 static int setup_dest_addr(void)
 {
 	debug("Monitor len: %08lX\n", gd->mon_len);
+	//puts("--d4 \n  ");
+	//printf("Monitor len: %08lX\n", gd->mon_len);
+	//puts("--d5 \n  ");
 	/*
 	 * Ram is setup, size stored in gd !!
 	 */
@@ -375,6 +378,7 @@ static int reserve_pram(void)
 static int reserve_round_4k(void)
 {
 	gd->relocaddr &= ~(4096 - 1);
+	printf("%s \n",__FUNCTION__);
 	return 0;
 }
 
@@ -423,6 +427,7 @@ static int reserve_trace(void)
 
 static int reserve_uboot(void)
 {
+printf("%s \n",__FUNCTION__);
 	if (!(gd->flags & GD_FLG_SKIP_RELOC)) {
 		/*
 		 * reserve memory for U-Boot code, data & bss
@@ -481,7 +486,7 @@ static int reserve_noncached(void)
 static int reserve_malloc(void)
 {
 	gd->start_addr_sp = reserve_stack_aligned(TOTAL_MALLOC_LEN);
-	debug("Reserving %dk for malloc() at: %08lx\n",
+	printf("Reserving %dk for malloc() at: %08lx\n",
 	      TOTAL_MALLOC_LEN >> 10, gd->start_addr_sp);
 #ifdef CONFIG_SYS_NONCACHED_MEMORY
 	reserve_noncached();
@@ -675,7 +680,7 @@ static int setup_reloc(void)
 		debug("Skipping relocation due to flag\n");
 		return 0;
 	}
-
+printf("%s \n",__FUNCTION__);
 #ifdef CONFIG_SYS_TEXT_BASE
 #ifdef ARM
 	gd->reloc_off = gd->relocaddr - (unsigned long)__image_copy_start;

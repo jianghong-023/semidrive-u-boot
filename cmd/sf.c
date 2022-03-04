@@ -23,9 +23,6 @@
 #include <dm/device-internal.h>
 
 #include "legacy-mtd-utils.h"
-#ifdef CONFIG_SDRV_OSPI
-#include <sdrv/sf_partitions.h>
-#endif
 
 static struct spi_flash *flash;
 
@@ -142,10 +139,6 @@ static int do_spi_flash_probe(int argc, char *const argv[])
 	}
 
 	flash = dev_get_uclass_priv(new);
-
-#ifdef CONFIG_SDRV_OSPI
-	sf_device_init(flash);
-#endif
 #else
 	if (flash)
 		spi_flash_free(flash);
@@ -359,156 +352,6 @@ static int do_spi_flash_erase(int argc, char *const argv[])
 
 	return ret == 0 ? 0 : 1;
 }
-
-#ifdef CONFIG_SDRV_OSPI
-static int do_spi_flash_part_print(int argc, char *const argv[])
-{
-	sf_part_print(flash);
-
-	return 0;
-}
-
-static int do_spi_flash_part_rw(int argc, char *const argv[])
-{
-	unsigned long addr;
-	void *buf;
-	char *endp;
-	ulong size;
-	int dev = 0, ret = 1;
-	loff_t offset, len, maxsize;
-	char *name;
-	struct partitions *part;
-
-	if (argc < 3)
-		return -1;
-
-	name = argv[1];
-	part = find_sf_partition_by_name(name);
-	if (!part) {
-		pr_err("part read fail\n");
-		return -1;
-	}
-
-	addr = simple_strtoul(argv[2], &endp, 16);
-	if (*argv[2] == 0 || *endp != 0)
-		return -1;
-
-	offset = 0;
-	size = 0;
-	if (argc > 3) {
-		ret = mtd_arg_off(argv[3], &dev, &offset, &len, &maxsize,
-				  MTD_DEV_TYPE_NOR, flash->size);
-		if (ret)
-			return -1;
-
-		if (argc > 4) {
-			ret = sf_parse_len_arg(argv[4], &size);
-			if (ret != 1)
-				return -1;
-		}
-	}
-
-	/* Consistency checking */
-	if (offset + size > flash->size) {
-		printf("ERROR: attempting %s past flash size (%#x)\n",
-		       argv[0], flash->size);
-		return 1;
-	}
-
-	if (offset >= part->size) {
-		printf("ERROR: attempting offset is error\n");
-		return 1;
-	}
-
-	if (!size || size > (part->size - offset))
-		size = part->size - offset;
-	offset += part->offset;
-
-	buf = map_physmem(addr, size, MAP_WRBACK);
-	if (!buf && addr) {
-		puts("Failed to map physical memory\n");
-		return 1;
-	}
-
-	if (!strncmp(argv[0], "part_read", 9)) {
-		ret = spi_flash_read(flash, offset, size, buf);
-		printf("SF: %zu bytes @ %#x part_read: ", (size_t)size, (u32)offset);
-	}
-	if (!strncmp(argv[0], "part_write", 10)) {
-		ret = spi_flash_write(flash, offset, size, buf);
-		printf("SF: %zu bytes @ %#x part_write: ", (size_t)size, (u32)offset);
-	}
-
-	if (ret)
-		printf("ERROR %d\n", ret);
-	else
-		printf("OK\n");
-
-	unmap_physmem(buf, size);
-
-	return ret == 0 ? 0 : 1;
-}
-
-static int do_spi_flash_part_erase(int argc, char *const argv[])
-{
-	int ret;
-	int dev = 0;
-	loff_t offset, len, maxsize;
-	ulong size;
-	char *name;
-	struct partitions *part;
-
-	if (argc < 2)
-		return -1;
-
-	name = argv[1];
-	part = find_sf_partition_by_name(name);
-	if (!part) {
-		pr_err("part read fail\n");
-		return -1;
-	}
-
-	offset = 0;
-	size = 0;
-	if (argc > 2) {
-		ret = mtd_arg_off(argv[2], &dev, &offset, &len, &maxsize,
-				  MTD_DEV_TYPE_NOR, flash->size);
-		if (ret)
-			return -1;
-
-		if (argc > 3) {
-			ret = sf_parse_len_arg(argv[3], &size);
-			if (ret != 1)
-				return -1;
-		}
-	}
-
-	/* Consistency checking */
-	if (offset + size > flash->size) {
-		printf("ERROR: attempting %s past flash size (%#x)\n",
-		       argv[0], flash->size);
-		return 1;
-	}
-
-	if (offset >= part->size) {
-		printf("ERROR: attempting offset is error\n");
-		return 1;
-	}
-
-	if (!size || size > (part->size - offset))
-		size = part->size - offset;
-	offset += part->offset;
-
-	ret = spi_flash_erase(flash, offset, size);
-	printf("SF: %zu bytes @ %#x Erased: ", (size_t)size, (u32)offset);
-	if (ret)
-		printf("ERROR %d\n", ret);
-	else
-		printf("OK\n");
-
-	return ret == 0 ? 0 : 1;
-}
-#endif
 
 static int do_spi_protect(int argc, char *const argv[])
 {
@@ -737,15 +580,6 @@ static int do_spi_flash(struct cmd_tbl *cmdtp, int flag, int argc,
 		ret = do_spi_flash_read_write(argc, argv);
 	else if (strcmp(cmd, "erase") == 0)
 		ret = do_spi_flash_erase(argc, argv);
-#ifdef CONFIG_SDRV_OSPI
-	else if (strcmp(cmd, "part") == 0)
-		ret = do_spi_flash_part_print(argc, argv);
-	else if (strcmp(cmd, "part_erase") == 0)
-		ret = do_spi_flash_part_erase(argc, argv);
-	else if (strcmp(cmd, "part_read") == 0 ||
-		 strcmp(cmd, "part_write") == 0)
-		ret = do_spi_flash_part_rw(argc, argv);
-#endif
 	else if (strcmp(cmd, "protect") == 0)
 		ret = do_spi_protect(argc, argv);
 #ifdef CONFIG_CMD_SF_TEST
@@ -771,7 +605,7 @@ usage:
 #endif
 
 U_BOOT_CMD(
-	sf,	6,	1,	do_spi_flash,
+	sf,	5,	1,	do_spi_flash,
 	"SPI flash sub-system",
 	"probe [[bus:]cs] [hz] [mode]	- init flash device on given SPI bus\n"
 	"				  and chip select\n"
@@ -789,9 +623,5 @@ U_BOOT_CMD(
 	"					  or to start of mtd `partition'\n"
 	"sf protect lock/unlock sector len	- protect/unprotect 'len' bytes starting\n"
 	"					  at address 'sector'\n"
-	"sf part - lists available partition on current sf device\n"
-	"sf part_read partition_name addr [offset] [len] - sf partition read\n"
-	"sf part_write partition_name addr [offset] [len] - sf partition write\n"
-	"sf part_erase partition_name [offset] [len] - sf partition erase\n"
 	SF_TEST_HELP
 );

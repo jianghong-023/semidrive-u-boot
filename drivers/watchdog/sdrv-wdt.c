@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0+
 /*
  * Copyright (C) 2021 Semidrive Corporation
- * porting by shide.zhou@semidrive.com
  */
 
 #include <clk.h>
@@ -12,7 +11,6 @@
 #include <asm/io.h>
 #include <asm/utils.h>
 #include <linux/bitops.h>
-#include <cpu_func.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -99,7 +97,7 @@ struct semidrive_wdt_priv {
 	void __iomem	*base;
 	int dying_delay;
 	unsigned int timeout;
-	const struct sdrv_wdt_clk_struct *wdt_clk;
+	struct sdrv_wdt_clk_struct *wdt_clk;
 	unsigned clk_div;
 	int sig_rstgen;
 	unsigned int min_hw_heartbeat_ms;
@@ -217,50 +215,19 @@ static int semidrive_wdt_start(struct udevice *dev, u64 time_out, ulong flags)
 static int sdrv_wdt_is_running(struct semidrive_wdt_priv *sdrv_wdt)
 {
 	void __iomem *wdt_ctl = sdrv_wdt->base;
-
 	return !!((readl(wdt_ctl) & WDG_CTRL_WDG_EN_STA_MASK)
 			&& (readl(wdt_ctl + 0x4) != readl(wdt_ctl + 0x1c)));
-}
-
-static int sdrv_wdt_stop(struct udevice *dev)
-{
-	unsigned int val;
-	struct semidrive_wdt_priv *sdrv_wdt = dev_get_priv(dev);
-	void __iomem *wdt_ctl = sdrv_wdt->base;
-
-	if (!sdrv_wdt_is_running(sdrv_wdt))
-		return 0;
-
-	val = readl(wdt_ctl);
-
-	val &= ~WDG_CTRL_WDG_EN_MASK;
-	writel(val, wdt_ctl);
-
-	while (readl(wdt_ctl) & WDG_CTRL_WDG_EN_STA_MASK)
-		;
-
-	return 0;
-}
-
-static int sdrv_wdt_refresh(struct udevice *dev)
-{
-	void __iomem *wdt_ctl, *wdt_wrc_ctl;
-	unsigned int val;
-	struct semidrive_wdt_priv *sdrv_wdt = dev_get_priv(dev);
-
-	wdt_ctl = sdrv_wdt->base;
-	wdt_wrc_ctl = wdt_ctl + 8;
-	val = readl(wdt_wrc_ctl);
-	val |= WDG_WRC_CTRL_REFR_TRIG_MASK;
-	writel(val, wdt_wrc_ctl);
-	return 0;
 }
 
 #define BOOT_REASON_ADDRESS  0x38418000
 #define REG_STATUS_ADDRESS   0x3841a000
 void sdrv_set_bootreason(struct udevice *dev)
 {
-	int ret = 0, reason, val;
+	struct semidrive_wdt_priv *sdrv_wdt = dev_get_priv(dev);
+	const void *fdt = gd->fdt_blob;
+	int node = dev_of_offset(dev);
+	size_t i;
+	int ret, reason, val;
 
 	reason = HALT_REASON_SW_GLOBAL_POR;
 
@@ -280,10 +247,11 @@ void sdrv_set_bootreason(struct udevice *dev)
 void sdrv_restart_without_reason(struct udevice *dev)
 {
 	struct semidrive_wdt_priv *sdrv_wdt = dev_get_priv(dev);
+	const void *fdt = gd->fdt_blob;
+	int node = dev_of_offset(dev);
 
 	if (!sdrv_wdt_is_running(sdrv_wdt)) {
 		/* run watchdog, and don't kick it */
-		pr_debug("restart machine\n");
 		flush_dcache_all();
 		semidrive_wdt_start(dev,0,0);
 	} else {
@@ -292,12 +260,10 @@ void sdrv_restart_without_reason(struct udevice *dev)
 	}
 }
 
-int sdrv_restart(struct udevice *dev, ulong flags)
+void sdrv_restart(struct udevice *dev, ulong flags)
 {
 	sdrv_set_bootreason(dev);
 	sdrv_restart_without_reason(dev);
-
-	return 0;
 }
 
 static int semidrive_wdt_probe(struct udevice *dev)
@@ -305,9 +271,10 @@ static int semidrive_wdt_probe(struct udevice *dev)
 	struct semidrive_wdt_priv *sdrv_wdt = dev_get_priv(dev);
 	const void *fdt = gd->fdt_blob;
 	int node = dev_of_offset(dev);
-	const fdt32_t *ret;;
+	__maybe_unused int ret;
 	const char *str = NULL, *str1= NULL;
-	int i, len;
+	int i;
+	unsigned clk_div, hearbeat, len;
 
 	sdrv_wdt->base = dev_remap_addr(dev);
 	if (!sdrv_wdt->base)
@@ -342,9 +309,6 @@ static int semidrive_wdt_probe(struct udevice *dev)
 }
 
 static const struct wdt_ops semidrive_wdt_ops = {
-	.start = semidrive_wdt_start,
-	.stop = sdrv_wdt_stop,
-	.reset = sdrv_wdt_refresh,
 	.expire_now = sdrv_restart,
 };
 

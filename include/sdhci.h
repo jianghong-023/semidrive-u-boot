@@ -253,8 +253,8 @@
 #define SDHCI_QUIRK_USE_WIDE8		(1 << 8)
 #define SDHCI_QUIRK_NO_1_8_V		(1 << 9)
 /* Controller reports wrong base clock capability */
-#define SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN BIT(25)
-#define SDHCI_QUIRK_64BIT_DMA_ADDR BIT(10)
+#define SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN (1 << 25)
+#define SDHCI_QUIRK_64BIT_DMA_ADDR (1 << 10)
 
 /* to make gcc happy */
 struct sdhci_host;
@@ -331,11 +331,10 @@ struct sdhci_adma_desc {
 #ifdef CONFIG_MMC_SDHCI_DWCMSHC
 struct clkgen_app_ip_cfg {
 	//clk select num 0~SLICE_CLK_MAX_NUM
-	u8 clk_src_sel_num;
-	u32 pre_div;
-	u32 post_div;
+	uint8_t clk_src_sel_num;
+	uint32_t pre_div;
+	uint32_t post_div;
 };
-
 enum card_id {
 	MSHC1 = 1,
 	MSHC2,
@@ -567,7 +566,7 @@ extern const struct dm_mmc_ops sdhci_ops;
 #ifdef CONFIG_MMC_SDHCI_DWCMSHC
 void sdhci_enable_v4_mode(struct sdhci_host *host);
 void sdhci_prepare_adma2_table(struct sdhci_adma64_desc *table,
-			       struct mmc_data *data, dma_addr_t addr);
+			      struct mmc_data *data, dma_addr_t addr);
 #endif
 #else
 #endif

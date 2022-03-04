@@ -32,6 +32,7 @@
 #include <fdt_support.h>
 #include <bootcount.h>
 #include <wdt.h>
+#include <debug_uart.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 

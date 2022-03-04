@@ -13,6 +13,8 @@
 #include <dt-bindings/memory/sdrv_ion.h>
 #include <dt-bindings/rpmsg/sd,d9lite-default.h>
 #include "d9-lite.dtsi"
+#include "lcd-timings.dtsi"
+#include "lcd_hsd123_serdes_mipi_1920x720.dtsi"
 
 / {
 	model = "Semidrive kunlun D9lite REF Board";
@@ -269,9 +271,138 @@
 	status = "disabled";
 };
 
+&csi0 {
+	mbus-type = "mipi-csi2";
+	pclk-sample = <1>;
+	status = "disabled";
+
+	ports {
+		csi0_stream0: port@0 {
+			csi0_stream0_in: endpoint@0 {
+				remote-endpoint = <&csimipi0_0_out>;
+			};
+		};
+		csi0_stream1: port@1 {
+			csi0_stream1_in: endpoint@0 {
+				remote-endpoint = <&csimipi0_1_out>;
+			};
+		};
+		csi0_stream2: port@2 {
+			csi0_stream2_in: endpoint@0 {
+				remote-endpoint = <&csimipi0_2_out>;
+			};
+		};
+		csi0_stream3: port@3 {
+			csi0_stream3_in: endpoint@0 {
+				remote-endpoint = <&csimipi0_3_out>;
+			};
+		};
+	};
+};
+
+&csi2 {
+	mbus-type = "parallel";
+	pclk-sample = <0>;
+	status = "disabled";
+
+	ports {
+		csi2_stream0: port@0 {
+			csi2_stream0_in: endpoint@0 {
+				remote-endpoint = <&csiparalle0_out>;
+			};
+		};
+
+	};
+};
+
+&csimipi0 {
+	status = "disabled";
+	lanerate = <72000000>;
+	hsa = <10>;
+	hbp = <20>;
+	hsd = <0x60>;
+	output-type = <0x1e>;
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@0 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0>;
+			csimipi0_0_in: endpoint@0 {
+				remote-endpoint = <&mcsi0deser_to_mipi_0>;
+				reg = <0>;
+			};
+			csimipi0_0_out: endpoint@1 {
+				remote-endpoint = <&csi0_stream0_in>;
+				reg = <0>;
+			};
+		};
+		port@1 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <1>;
+			csimipi0_1_in: endpoint@0 {
+				remote-endpoint = <&mcsi0deser_to_mipi_1>;
+				reg = <1>;
+			};
+			csimipi0_1_out: endpoint@1 {
+				remote-endpoint = <&csi0_stream1_in>;
+				reg = <1>;
+			};
+		};
+		port@2 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <2>;
+			csimipi0_2_in: endpoint@0 {
+				remote-endpoint = <&mcsi0deser_to_mipi_2>;
+				reg = <2>;
+			};
+			csimipi0_2_out: endpoint@1 {
+				remote-endpoint = <&csi0_stream2_in>;
+				reg = <2>;
+			};
+		};
+		port@3 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <3>;
+			csimipi0_3_in: endpoint@0 {
+				remote-endpoint = <&mcsi0deser_to_mipi_3>;
+				reg = <3>;
+			};
+			csimipi0_3_out: endpoint@1 {
+				remote-endpoint = <&csi0_stream3_in>;
+				reg = <3>;
+			};
+		};
+	};
+};
+
+&csiparallel0 {
+	status = "disabled";
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	port {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0>;
+		csiparallel0_in: endpoint@0 {
+			remote-endpoint = <&dvpdeser_to_parallel>;
+		};
+
+		csiparallel0_out: endpoint@1 {
+			remote-endpoint = <&csi2_stream0_in>;
+		};
+	};
+};
 
 &i2c2 {
-	status = "disabled";
+        status = "disabled";
 };
 
 &i2c3 {
@@ -285,7 +416,7 @@
 	rx8025t: rx8025t@32 {
 		compatible = "epson,rx8025";
 		reg = <0x32>;
-	};
+        };
 };
 &i2c4 {
 	status = "disabled";
@@ -319,11 +450,72 @@
 &i2c8 {
 //sch part U3(N4)
 	status = "disabled";
+
+	mcsi0deser:mcsi0deser@31 {
+		compatible = "nextchip,n4";
+		reg = <0x31>;
+		sync = <0>;
+		pwdn-gpios = <&port5d 27 GPIO_ACTIVE_HIGH>;//index(123) gpio h1
+		rst-gpios = <&port5c 15 GPIO_ACTIVE_HIGH>;//index(79) gpio D15
+		//semidrive,poc = <&i2c9>;
+		ports {
+			port@0 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				mcsi0deser_to_mipi_0: endpoint {
+					remote-endpoint = <&csimipi0_0_in>;
+				};
+			};
+			port@1 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				mcsi0deser_to_mipi_1: endpoint {
+					remote-endpoint = <&csimipi0_1_in>;
+				};
+			};
+			port@2 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				mcsi0deser_to_mipi_2: endpoint {
+					remote-endpoint = <&csimipi0_2_in>;
+				};
+			};
+			port@3 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				mcsi0deser_to_mipi_3: endpoint {
+					remote-endpoint = <&csimipi0_3_in>;
+				};
+			};
+		};
+	};
 };
 
 &i2c9 {
 	status = "disabled";
 
+	dvp_deser:dvp_deser@7E {
+		compatible = "sdrv,dvp_deser";
+		clock-frequency = <24000000>;
+		reg = <0x7E>;
+		//powerdown-gpios = <&cam_gpios 11 0>;
+		//gpi-gpios = <&cam_gpios 10 0>;
+		pwdn-gpios = <&port5c 19 0>;
+		//poc-gpios = <&cam_gpios 6 0>;
+		//gpi-gpios = <&ext_gpio74 10 0>;
+		port {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			dvpdeser_to_parallel: endpoint {
+				remote-endpoint = <&csiparallel0_in>;
+			};
+		};
+	};
 };
 
 &i2c10 {
@@ -336,8 +528,16 @@
 &i2c11 {
 //sch part cn4(lvd tp)
 	status = "disabled";
-};
 
+	gt9271_11_j35:gt9271_11_j35@5d {
+		//pinctrl-names = "default";
+		//pinctrl-0 = <&pinctrl_gpiotouch_mipi>;
+		compatible = "goodix,gt9271";
+		irq-gpios = <&port5e 17 0>;	/*io97*/
+		//reset-gpios = <&tp_gpio 2 0>;	/*index 2*/
+		reg = <0x5d>;
+	};
+};
 
 &uart15 {
 //linux debug
@@ -471,6 +671,54 @@
 	status = "okay";
 };
 
+&g2d {
+	status = "disabled";
+};
+
+&parallel0 {
+	status = "disabled";
+};
+
+&dtimings0 {
+	native-mode = <&vesa_fhd1920x1080>;
+};
+
+&ptimings0 {
+	status = "disabled";
+};
+
+&dc1 {
+	status = "disabled";
+};
+
+&crtc0 {
+	dpc-master = <&dc1>;
+	status = "disabled";
+/*
+	crtc0_out: port {
+		crtc0_out_interface: endpoint@0 {
+			remote-endpoint = <&dsi_in_crtc0>;
+		};
+	};
+*/
+};
+
+&dsi0 {
+	status = "disabled";
+	panel {
+		compatible = "semidrive,mipi-panel";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0>;
+		status = "okay";
+		semidrive,lcd-attached = "lcd_hsd123_serdes_mipi_1920x720";
+	};
+};
+
+&display {
+	sdriv,crtc = <&crtc0>;
+	status = "disabled";
+};
 
 &pinctrl {
 	reg = <0x0 0x37000000 0x0 0x10000>;
@@ -584,7 +832,7 @@
 };
 
 &spi2 {
-//this belong to safety domain, not handover now.
+// this belong to safety domain, not handover now.
 	status = "disabled";
 };
 
@@ -650,7 +898,7 @@
 };
 
 &usb0 {
-	dr_mode = "otg";
+	dr_mode = "host";
 	status = "okay";
 };
 
@@ -659,6 +907,7 @@
 };
 
 &usb1 {
+	dr_mode = "host";
 	status = "okay";
 };
 
@@ -732,6 +981,15 @@
 
 &pcie1 {
 	status = "disabled";
+
+	endpoint {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		brcmf@1 {
+			reg = <1>;
+			compatible = "brcm,bcm4329-fmac";
+		};
+        };
 };
 
 &vce2 {

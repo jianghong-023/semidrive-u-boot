@@ -2,7 +2,6 @@ if ARCH_SEMIDRIVE
 
 config SEMIDRIVE_COMMON
 	bool
-	select CLK
 	select DM
 	select DM_SERIAL
 	select SYSCON
@@ -17,6 +16,14 @@ config SEMIDRIVE_COMMON
 
 config SYSCOUNTER_TIMER
 	bool
+
+config SYSCOUNTER_IRQ
+	bool "Support timer interrupt"
+	depends on SYSCOUNTER_TIMER
+	depends on ARM_GIC
+	default y
+	help
+	  Select this to support generic timer interrupt
 
 choice
 	prompt "Platform select"

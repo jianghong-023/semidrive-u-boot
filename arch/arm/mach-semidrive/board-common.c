@@ -13,6 +13,7 @@
 #include <asm/global_data.h>
 #include <asm/ptrace.h>
 #include <linux/libfdt.h>
+#include <image.h>
 #include <linux/err.h>
 #include <asm/arch/mem.h>
 #include <asm/armv8/mmu.h>
@@ -21,7 +22,6 @@
 #include <u-boot/crc.h>
 #include <dm/uclass.h>
 #include <dm/device.h>
-#include <wdt.h>
 
 #ifdef CONFIG_SPL_BUILD
 #include <debug_uart.h>
@@ -36,7 +36,7 @@
 #endif
 #ifdef CONFIG_SPL_MMC_SUPPORT
 #include <mmc.h>
-#include <sdrv/emmc_partitions.h>
+#include <emmc_partitions.h>
 #endif
 #ifdef CONFIG_TARGET_D9LITE_REF
 #include <dt-bindings/memmap/d9lite/projects/default/image_cfg.h>
@@ -120,14 +120,14 @@ void semidrive_wdt_reset(void)
 
 	ret = uclass_get(UCLASS_WDT, &uc);
 	if (ret) {
-		printf("get wdt uclass failed\n");
+        printf("get wdt uclass failed\n");
 		return;
-	}
+    }
 
 	uclass_foreach_dev(dev, uc) {
-	if (dev->driver->priv_auto)
-		wdt_expire_now(dev, 0);
-	}
+        if (dev->driver->priv_auto)
+            wdt_expire_now(dev, 0);
+    }
 }
 #endif
 
@@ -340,6 +340,7 @@ int spl_emmc_load_image(int dev_num)
 		pr_err("spl load AP2 backup fail\n");
 		return -EINVAL;
 	}
+//	semidrive_wdt_reset();
 #endif
 
 	return 0;
@@ -398,15 +399,16 @@ void board_init_r(gd_t *id, ulong dest_addr)
 #ifndef CONFIG_TARGET_D9PLUS_AP2_REF
 	atf_entry = (bl31_entry_t)AP_ATF_MEMBASE;
 #else
-	/* atf_entry = (bl31_entry_t)AP2_BOOTLOADER_MEMBASE; */
+//	atf_entry = (bl31_entry_t)AP2_BOOTLOADER_MEMBASE;
 	atf_entry = (bl31_entry_t)AP2_ATF_MEMBASE;
 #endif
+
 
 #ifndef CONFIG_TARGET_D9PLUS_AP2_REF
 	spl_emmc_load_image(0);
 #else
 	spl_ap2_run();
-	/* atf_entry(0, 0, 0); */
+//	atf_entry(0, 0, 0);
 #endif
 
 	/* Jump atf */

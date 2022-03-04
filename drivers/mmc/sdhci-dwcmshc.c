@@ -11,7 +11,6 @@
 #include <linux/delay.h>
 #include <linux/io.h>
 #include <linux/kernel.h>
-#include <linux/bitops.h>
 #include <mmc.h>
 #include <sdhci.h>
 #include <errno.h>
@@ -38,13 +37,13 @@
 #define CKGEN_EMMC2_LP_GATING_ADDR 0x3810d000
 #define CKGEN_EMMC3_LP_GATING_ADDR 0x3810e000
 #define CKGEN_EMMC4_LP_GATING_ADDR 0x3810f000
-#define CLKGEN_IP_SLICE_CTL_CG_EN_MASK BIT(0)
+#define CLKGEN_IP_SLICE_CTL_CG_EN_MASK (1 << 0)
 #define CLKGEN_IP_SLICE_CTL_CLK_SRC_SEL_MASK (0x7 << 1)
-#define CLKGEN_IP_SLICE_CTL_CLK_SRC_SEL(x) (((x) & 0x7) << 1)
+#define CLKGEN_IP_SLICE_CTL_CLK_SRC_SEL(x) ((x & 0x7) << 1)
 #define CLKGEN_IP_SLICE_CTL_PRE_DIV_NUM_MASK (0x7 << 4)
-#define CLKGEN_IP_SLICE_CTL_PRE_DIV_NUM(x) (((x) & 0x7) << 4)
+#define CLKGEN_IP_SLICE_CTL_PRE_DIV_NUM(x) ((x & 0x7) << 4)
 #define CLKGEN_IP_SLICE_CTL_POST_DIV_NUM_MASK (0x3f << 10)
-#define CLKGEN_IP_SLICE_CTL_POST_DIV_NUM(x) (((x) & 0x3f) << 10)
+#define CLKGEN_IP_SLICE_CTL_POST_DIV_NUM(x) ((x & 0x3f) << 10)
 
 #define CLKGEN_PRE_DIV_NUM_MAX 0x7
 #define CLKGEN_POST_DIV_NUM_MAX 0x3F
@@ -145,6 +144,8 @@ static void dwcmshc_phy_pad_config(struct sdhci_host *host)
 		sdhci_writew(host, DWC_MSHC_PHY_PAD_SD_STB, DWC_MSHC_STBPAD_CNFG);
 		sdhci_writew(host, DWC_MSHC_PHY_PAD_SD_DAT, DWC_MSHC_RSTNPAD_CNFG);
 	}
+
+	return;
 }
 
 static inline void dwcmshc_phy_delay_config(struct sdhci_host *host)
@@ -153,6 +154,8 @@ static inline void dwcmshc_phy_delay_config(struct sdhci_host *host)
 	sdhci_writeb(host, 0, DWC_MSHC_SDCLKDL_CNFG);
 	sdhci_writeb(host, 8, DWC_MSHC_SMPLDL_CNFG);
 	sdhci_writeb(host, 8, DWC_MSHC_ATDL_CNFG);
+
+	return;
 }
 
 static int dwcmshc_phy_dll_config(struct sdhci_host *host)
@@ -190,7 +193,7 @@ static int dwcmshc_phy_dll_config(struct sdhci_host *host)
 			break;
 		if (!timeout) {
 			pr_err("%s: dwcmshc wait for phy dll lock timeout!\n",
-			       host->name);
+				   host->name);
 			return -1;
 		}
 		timeout--;
@@ -236,7 +239,7 @@ static int dwcmshc_phy_init(struct sdhci_host *host)
 			break;
 		if (!timeout) {
 			pr_err("%s: dwcmshc wait for phy power good timeout!\n",
-			       host->name);
+				   host->name);
 			return -1;
 		}
 		timeout--;
@@ -285,10 +288,10 @@ static inline void dwcmshc_auto_tuning_set(struct sdhci_host *host)
 
 static int clkgen_ip_slice_set(struct sdhci_host *host, struct clkgen_app_ip_cfg *ip_cfg)
 {
-	u32 reg_read = 0;
-	u32 reg_write = 0;
+	uint32_t reg_read = 0;
+	uint32_t reg_write = 0;
 	void __iomem *ip_slice_base_addr;
-	u32 reg = 0, ip_slice;
+	uint32_t reg = 0, ip_slice;
 	unsigned long timeout;
 	int ret = 0;
 
@@ -303,13 +306,14 @@ static int clkgen_ip_slice_set(struct sdhci_host *host, struct clkgen_app_ip_cfg
 		ip_slice = CKGEN_EMMC3_IP_SLICE_ADDR;
 		break;
 	case MSHC4:
-		ip_slice = CKGEN_EMMC4_IP_SLICE_ADDR;
+		ip_slice= CKGEN_EMMC4_IP_SLICE_ADDR;
 		break;
 	}
 
 	ip_slice_base_addr = ioremap(ip_slice, 32);
-	if (IS_ERR(ip_slice_base_addr))
+	if (IS_ERR(ip_slice_base_addr)) {
 		return PTR_ERR(ip_slice_base_addr);
+	}
 
 	//clear pre_en
 	reg_read = readl(ip_slice_base_addr);
@@ -324,7 +328,7 @@ static int clkgen_ip_slice_set(struct sdhci_host *host, struct clkgen_app_ip_cfg
 			if ((reg >> 28) & 0x1)
 				break;
 			timeout--;
-			mdelay(1);
+			udelay(1000);
 			if (!timeout) {
 				pr_err("emmc set clk timeout\n");
 				ret = -1;
@@ -349,7 +353,7 @@ static int clkgen_ip_slice_set(struct sdhci_host *host, struct clkgen_app_ip_cfg
 		if ((reg >> 28) & 0x1)
 			break;
 		timeout--;
-		mdelay(1);
+		udelay(1000);
 		if (!timeout) {
 			pr_err("emmc set clk timeout\n");
 			ret = -1;
@@ -370,7 +374,7 @@ static int clkgen_ip_slice_set(struct sdhci_host *host, struct clkgen_app_ip_cfg
 		if (!((reg >> 30) & 0x1))
 			break;
 		timeout--;
-		mdelay(1);
+		udelay(1000);
 		if (!timeout) {
 			pr_err("emmc set clk timeout\n");
 			ret = -1;
@@ -391,7 +395,7 @@ static int clkgen_ip_slice_set(struct sdhci_host *host, struct clkgen_app_ip_cfg
 		if (!((reg >> 31) & 0x1))
 			break;
 		timeout--;
-		mdelay(1);
+		udelay(1000);
 		if (!timeout) {
 			pr_err("emmc set clk timeout\n");
 			ret = -1;
@@ -406,10 +410,10 @@ out:
 
 static int clkgen_lp_gating_en(struct sdhci_host *host, unsigned int enable)
 {
-	u32 reg_read = 0;
-	u32 reg_write = 0;
+	uint32_t reg_read = 0;
+	uint32_t reg_write = 0;
 	void __iomem *lp_gating_base_addr;
-	u32 lp_gating;
+	uint32_t lp_gating;
 
 	switch (host->plat->id) {
 	case MSHC1:
@@ -427,8 +431,9 @@ static int clkgen_lp_gating_en(struct sdhci_host *host, unsigned int enable)
 	}
 
 	lp_gating_base_addr = ioremap(lp_gating, 32);
-	if (IS_ERR(lp_gating_base_addr))
+	if (IS_ERR(lp_gating_base_addr)) {
 		return PTR_ERR(lp_gating_base_addr);
+	}
 
 	reg_read = readl(lp_gating_base_addr);
 	reg_write = reg_read & ~(1 << 31);
@@ -449,15 +454,15 @@ static int mshc_clkgen_config(struct sdhci_host *host, unsigned long freq)
 {
 	int ret = 0;
 	struct clkgen_app_ip_cfg ip_cfg;
-	// TODO: hardcode mshc clock source 400Mhz
-	const u32 mshc_base_freq = 400000000;
-	u32 clock_div;
-	u32 pre_div, post_div;
-	u32 clock_div_succ = 0;
-	u32 freq_bias = mshc_base_freq;
-	u32 curr_freq_bias;
-
 	ip_cfg.clk_src_sel_num = 4;
+	// TODO: hardcode mshc clock source 400Mhz
+	const uint32_t mshc_base_freq = 400000000;
+	uint32_t clock_div;
+	uint32_t pre_div, post_div;
+	uint32_t clock_div_succ = 0;
+	uint32_t freq_bias = mshc_base_freq;
+	uint32_t curr_freq_bias;
+
 	clock_div = DIV_ROUND_UP(mshc_base_freq, freq);
 
 	for (int i = 0; i <= CLKGEN_PRE_DIV_NUM_MAX; i++) {
@@ -465,7 +470,7 @@ static int mshc_clkgen_config(struct sdhci_host *host, unsigned long freq)
 		post_div = DIV_ROUND_UP(clock_div, i + 1) - 1;
 
 		if (post_div <= CLKGEN_POST_DIV_NUM_MAX) {
-			if (!(clock_div % (pre_div + 1))) {
+			if (0 == clock_div % (pre_div + 1)) {
 				ip_cfg.pre_div = pre_div;
 				ip_cfg.post_div = post_div;
 				clock_div_succ = 1;
@@ -483,7 +488,7 @@ static int mshc_clkgen_config(struct sdhci_host *host, unsigned long freq)
 	}
 	pr_debug("pre_div = %x, post_div = %x\n", ip_cfg.pre_div, ip_cfg.post_div);
 
-	if (!clock_div_succ) {
+	if (0 == clock_div_succ) {
 		pr_err("%s: calculate the clock div failed!\n", __func__);
 		ret = -1;
 		goto out;
@@ -515,7 +520,7 @@ void dwcmshc_set_clock(struct sdhci_host *host, unsigned long clock)
 		return;
 
 	/*
-	 * Because the clock will be 2 dvider by mshc model,
+	 * Beacuse the clock will be 2 dvider by mshc model,
 	 * so we need twice base frequency.
 	 */
 	if (host->quirks & SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN) {
@@ -525,7 +530,7 @@ void dwcmshc_set_clock(struct sdhci_host *host, unsigned long clock)
 		host->mmc->clock = clock;
 	}
 	pr_debug("%s: Set clock = %ld, actual clock = %d\n",
-		 host->name, clock, host->mmc->clock);
+		host->name, clock, host->mmc->clock);
 }
 
 static int set_ddr_mode(struct sdhci_host *host, unsigned int ddr_mode)
@@ -569,15 +574,15 @@ static void dwcmshc_set_ddr(struct sdhci_host *host)
 	u32 ddr_mode = 0;
 	struct mmc *mmc = host->mmc;
 
-	if (mmc->selected_mode == UHS_DDR50 ||
-	    mmc->selected_mode == MMC_DDR_52 ||
-	    mmc->selected_mode == MMC_HS_400 ||
-	    mmc->selected_mode == MMC_HS_400_ES)
+	if ((mmc->selected_mode == UHS_DDR50)
+			|| (mmc->selected_mode == MMC_DDR_52)
+			|| (mmc->selected_mode == MMC_HS_400)
+			|| (mmc->selected_mode == MMC_HS_400_ES))
 		ddr_mode = 1;
 	set_ddr_mode(host, ddr_mode);
 
-	if (mmc->selected_mode > MMC_HS_200 &&
-	    host->mmc->clock > 100000000) {
+	if ((mmc->selected_mode > MMC_HS_200) &&
+			(host->mmc->clock > 100000000)) {
 		if (dwcmshc_phy_dll_config(host))
 			pr_err("%s: phy dll config failed!\n", host->name);
 	}
@@ -597,9 +602,10 @@ void _sdhci_reset(struct sdhci_host *host, u8 mask)
 			return;
 		}
 		timeout--;
-		mdelay(1);
+		udelay(1000);
 	}
 }
+
 
 static void dwcmshc_sdhci_reset(struct sdhci_host *host, u8 mask)
 {
@@ -608,14 +614,16 @@ static void dwcmshc_sdhci_reset(struct sdhci_host *host, u8 mask)
 	if (!sdhci_dwcmshc_mmc_ops.get_cd(mmc->dev))
 		return;
 
-	/* Hold phy reset when software reset host. */
-	if (mask & SDHCI_RESET_ALL)
+	if (mask & SDHCI_RESET_ALL) {
+		/* Hold phy reset when software reset host. */
 		dwcmshc_phy_reset(host);
+	}
 
 	_sdhci_reset(host, mask);
 
-	if (mask & SDHCI_RESET_ALL)
+	if (mask & SDHCI_RESET_ALL) {
 		emmc_card_init(host);
+	}
 }
 
 int dwcmshc_set_ios_post(struct sdhci_host *host)
@@ -626,8 +634,9 @@ int dwcmshc_set_ios_post(struct sdhci_host *host)
 
 	/* When switch signal voltage success, need init mshc phy. */
 	phy_cnfg_reg = sdhci_readw(host, DWC_MSHC_PHY_CNFG);
-	if (!(phy_cnfg_reg & PHY_RSTN))
+	if ((phy_cnfg_reg & PHY_RSTN) == 0u) {
 		dwcmshc_phy_init(host);
+	}
 
 	dwcmshc_set_ddr(host);
 
@@ -649,6 +658,7 @@ static void dwcmshc_get_property(struct udevice *dev)
 	if (!dev_read_u32(dev, "sdrv,scr_signals_ddr", &scr_signal))
 		plat->scr_signals_ddr = scr_signal;
 	pr_info("the ddr mode scr signal = %d\n", plat->scr_signals_ddr);
+
 }
 
 void sdhci_start_tuning(struct sdhci_host *host)
@@ -780,7 +790,7 @@ static int __dwcmshc_execute_tuning(struct sdhci_host *host, u32 opcode)
 		ret = sdhci_send_tuning(host, opcode);
 		if (ret) {
 			pr_err("%s: Tuning timeout, falling back to fixed sampling clock\n",
-			       host->name);
+				host->name);
 			sdhci_abort_tuning(host, opcode);
 			return -ETIMEDOUT;
 		}
@@ -802,7 +812,7 @@ static int __dwcmshc_execute_tuning(struct sdhci_host *host, u32 opcode)
 	}
 
 	pr_err("%s: Tuning failed, falling back to fixed sampling clock\n",
-	       host->name);
+		host->name);
 	sdhci_reset_tuning(host);
 	return -EAGAIN;
 }
@@ -813,7 +823,12 @@ static int dwcmshc_execute_tuning(struct mmc *mmc, u8 opcode)
 	struct sdhci_host *host = mmc->priv;
 	struct sdhci_dwcmshc_plat *plat = host->plat;
 
-	if (plat->tuning_delay < 0 && opcode == MMC_CMD_SEND_TUNING_BLOCK)
+#if 0
+	if (host->flags & SDHCI_HS400_TUNING)
+		host->mmc->retune_period = 0;
+#endif
+
+	if ((plat->tuning_delay < 0) && (opcode == MMC_CMD_SEND_TUNING_BLOCK))
 		plat->tuning_delay = 1;
 
 	sdhci_reset_tuning(host);
@@ -866,8 +881,9 @@ static int mmc_reset(struct sdhci_host *host)
 	}
 
 	ioaddr = ioremap(rstgen_addr, 32);
-	if (IS_ERR(ioaddr))
+	if (IS_ERR(ioaddr)) {
 		return PTR_ERR(ioaddr);
+	}
 
 	reg = readl(ioaddr);
 	if (reg & (1 << 31)) {
@@ -891,7 +907,7 @@ static int mmc_reset(struct sdhci_host *host)
 				ret = -1;
 				goto out;
 			}
-			mdelay(1);
+			udelay(1000);
 		}
 	}
 
@@ -909,7 +925,7 @@ static int mmc_reset(struct sdhci_host *host)
 			ret = -1;
 			goto out;
 		}
-		mdelay(1);
+		udelay(1000);
 	}
 
 	reg |= 0x1;
@@ -926,7 +942,7 @@ static int mmc_reset(struct sdhci_host *host)
 			ret = -1;
 			goto out;
 		}
-		mdelay(1);
+		udelay(1000);
 	}
 
 out:

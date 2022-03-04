@@ -43,7 +43,7 @@
 			d-cache-sets = <0x80>;
 			next-level-cache = <&l2>;
 		};
-		l2: l2-cache {
+	        l2: l2-cache {
 			compatible = "cache";
 			cache-size = <0x20000>;
 			cache-line-size = <64>;

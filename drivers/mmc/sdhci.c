@@ -27,56 +27,56 @@ void sdhci_dumpregs(struct sdhci_host *host)
 	printf("\n============ SDHCI REGISTER DUMP ===========\n");
 
 	printf("Sys addr:  0x%08x | Version:  0x%08x\n",
-	       sdhci_readl(host, SDHCI_DMA_ADDRESS),
-	       sdhci_readw(host, SDHCI_HOST_VERSION));
+			sdhci_readl(host, SDHCI_DMA_ADDRESS),
+			sdhci_readw(host, SDHCI_HOST_VERSION));
 	printf("Blk size:  0x%08x | Blk cnt:  0x%08x\n",
-	       sdhci_readw(host, SDHCI_BLOCK_SIZE),
-	       sdhci_readw(host, SDHCI_BLOCK_COUNT));
+			sdhci_readw(host, SDHCI_BLOCK_SIZE),
+			sdhci_readw(host, SDHCI_BLOCK_COUNT));
 	printf("Argument:  0x%08x | Trn mode: 0x%08x\n",
-	       sdhci_readl(host, SDHCI_ARGUMENT),
-	       sdhci_readw(host, SDHCI_TRANSFER_MODE));
+			sdhci_readl(host, SDHCI_ARGUMENT),
+			sdhci_readw(host, SDHCI_TRANSFER_MODE));
 	printf("Present:   0x%08x | Host ctl: 0x%08x\n",
-	       sdhci_readl(host, SDHCI_PRESENT_STATE),
-	       sdhci_readb(host, SDHCI_HOST_CONTROL));
+			sdhci_readl(host, SDHCI_PRESENT_STATE),
+			sdhci_readb(host, SDHCI_HOST_CONTROL));
 	printf("Power:     0x%08x | Blk gap:  0x%08x\n",
-	       sdhci_readb(host, SDHCI_POWER_CONTROL),
-	       sdhci_readb(host, SDHCI_BLOCK_GAP_CONTROL));
+			sdhci_readb(host, SDHCI_POWER_CONTROL),
+			sdhci_readb(host, SDHCI_BLOCK_GAP_CONTROL));
 	printf("Wake-up:   0x%08x | Clock:    0x%08x\n",
-	       sdhci_readb(host, SDHCI_WAKE_UP_CONTROL),
-	       sdhci_readw(host, SDHCI_CLOCK_CONTROL));
+			sdhci_readb(host, SDHCI_WAKE_UP_CONTROL),
+			sdhci_readw(host, SDHCI_CLOCK_CONTROL));
 	printf("Timeout:   0x%08x | Int stat: 0x%08x\n",
-	       sdhci_readb(host, SDHCI_TIMEOUT_CONTROL),
-	       sdhci_readl(host, SDHCI_INT_STATUS));
+			sdhci_readb(host, SDHCI_TIMEOUT_CONTROL),
+			sdhci_readl(host, SDHCI_INT_STATUS));
 	printf("Int enab:  0x%08x | Sig enab: 0x%08x\n",
-	       sdhci_readl(host, SDHCI_INT_ENABLE),
-	       sdhci_readl(host, SDHCI_SIGNAL_ENABLE));
+			sdhci_readl(host, SDHCI_INT_ENABLE),
+			sdhci_readl(host, SDHCI_SIGNAL_ENABLE));
 	printf("ACmd stat: 0x%08x | Slot int: 0x%08x\n",
-	       sdhci_readw(host, SDHCI_AUTO_CMD_STATUS),
-	       sdhci_readw(host, SDHCI_SLOT_INT_STATUS));
+			sdhci_readw(host, SDHCI_AUTO_CMD_STATUS),
+			sdhci_readw(host, SDHCI_SLOT_INT_STATUS));
 	printf("Caps:      0x%08x | Caps_1:   0x%08x\n",
-	       sdhci_readl(host, SDHCI_CAPABILITIES),
-	       sdhci_readl(host, SDHCI_CAPABILITIES_1));
+			sdhci_readl(host, SDHCI_CAPABILITIES),
+			sdhci_readl(host, SDHCI_CAPABILITIES_1));
 	printf("Cmd:       0x%08x | Max curr: 0x%08x\n",
-	       sdhci_readw(host, SDHCI_COMMAND),
-	       sdhci_readl(host, SDHCI_MAX_CURRENT));
+			sdhci_readw(host, SDHCI_COMMAND),
+			sdhci_readl(host, SDHCI_MAX_CURRENT));
 	printf("Resp[0]:   0x%08x | Resp[1]:  0x%08x\n",
-	       sdhci_readl(host, SDHCI_RESPONSE),
-	       sdhci_readl(host, SDHCI_RESPONSE + 4));
+			sdhci_readl(host, SDHCI_RESPONSE),
+			sdhci_readl(host, SDHCI_RESPONSE + 4));
 	printf("Resp[2]:   0x%08x | Resp[3]:  0x%08x\n",
-	       sdhci_readl(host, SDHCI_RESPONSE + 8),
-	       sdhci_readl(host, SDHCI_RESPONSE + 12));
+			sdhci_readl(host, SDHCI_RESPONSE + 8),
+			sdhci_readl(host, SDHCI_RESPONSE + 12));
 	printf("Host ctl2: 0x%08x\n",
-	       sdhci_readw(host, SDHCI_HOST_CONTROL2));
+			sdhci_readw(host, SDHCI_HOST_CONTROL2));
 
 	if (host->flags & USE_ADMA64) {
 		printf("ADMA Err:  0x%08x | ADMA Ptr: 0x%08x%08x\n",
-		       sdhci_readl(host, SDHCI_ADMA_ERROR),
-		       sdhci_readl(host, SDHCI_ADMA_ADDRESS_HI),
-		       sdhci_readl(host, SDHCI_ADMA_ADDRESS));
+				sdhci_readl(host, SDHCI_ADMA_ERROR),
+				sdhci_readl(host, SDHCI_ADMA_ADDRESS_HI),
+				sdhci_readl(host, SDHCI_ADMA_ADDRESS));
 	} else {
 		printf("ADMA Err:  0x%08x | ADMA Ptr: 0x%08x\n",
-		       sdhci_readl(host, SDHCI_ADMA_ERROR),
-		       sdhci_readl(host, SDHCI_ADMA_ADDRESS));
+				sdhci_readl(host, SDHCI_ADMA_ERROR),
+				sdhci_readl(host, SDHCI_ADMA_ADDRESS));
 	}
 
 	printf("============================================\n");
@@ -190,7 +190,7 @@ static void sdhci_prepare_dma(struct sdhci_host *host, struct mmc_data *data,
 	else if (host->flags & (USE_ADMA | USE_ADMA64)) {
 #ifdef CONFIG_MMC_SDHCI_DWCMSHC
 		sdhci_prepare_adma2_table(host->adma_desc_table, data,
-					  host->start_addr);
+					 host->start_addr);
 #else
 		sdhci_prepare_adma_table(host->adma_desc_table, data,
 					 host->start_addr);
@@ -386,6 +386,7 @@ static int sdhci_send_command(struct mmc *mmc, struct mmc_cmd *cmd,
 
 	sdhci_writel(host, cmd->cmdarg, SDHCI_ARGUMENT);
 	sdhci_writew(host, SDHCI_MAKE_CMD(cmd->cmdidx, flags), SDHCI_COMMAND);
+
 	start = get_timer(0);
 	do {
 		stat = sdhci_readl(host, SDHCI_INT_STATUS);
@@ -412,14 +413,14 @@ static int sdhci_send_command(struct mmc *mmc, struct mmc_cmd *cmd,
 	if (!ret && data)
 		ret = sdhci_transfer_data(host, data);
 
-	if (host->quirks & SDHCI_QUIRK_WAIT_SEND_CMD)
-		udelay(1000);
+//	if (host->quirks & SDHCI_QUIRK_WAIT_SEND_CMD)
+//		udelay(1000);
 
 	stat = sdhci_readl(host, SDHCI_INT_STATUS);
 	sdhci_writel(host, SDHCI_INT_ALL_MASK, SDHCI_INT_STATUS);
 	if (!ret) {
 		if ((host->quirks & (SDHCI_QUIRK_32BIT_DMA_ADDR | SDHCI_QUIRK_64BIT_DMA_ADDR)) &&
-		    !is_aligned && data->flags == MMC_DATA_READ)
+				!is_aligned && (data->flags == MMC_DATA_READ))
 			memcpy(data->dest, host->align_buffer, trans_bytes);
 		return 0;
 	}
@@ -628,8 +629,8 @@ static void sdhci_set_voltage(struct sdhci_host *host)
 		u32 ctrl;
 
 		ctrl = sdhci_readw(host, SDHCI_HOST_CONTROL2);
-		if (host->plat->card_is_emmc &&
-		    !(ctrl & SDHCI_CTRL_VDD_180)) {
+		if (host->plat->card_is_emmc
+				&& !(ctrl & SDHCI_CTRL_VDD_180)) {
 			ctrl |= SDHCI_CTRL_VDD_180;
 			sdhci_writew(host, ctrl, SDHCI_HOST_CONTROL2);
 		}
@@ -843,14 +844,14 @@ static int sdhci_init(struct mmc *mmc)
 		}
 	} else {
 #endif
-		if (host->quirks & SDHCI_QUIRK_32BIT_DMA_ADDR) {
-			host->align_buffer = memalign(8, 512 * 1024);
-			if (!host->align_buffer) {
-				printf("%s: Aligned buffer alloc failed!!!\n",
-				       __func__);
-				return -ENOMEM;
-			}
+	if (host->quirks & SDHCI_QUIRK_32BIT_DMA_ADDR) {
+		host->align_buffer = memalign(8, 512 * 1024);
+		if (!host->align_buffer) {
+			printf("%s: Aligned buffer alloc failed!!!\n",
+			       __func__);
+			return -ENOMEM;
 		}
+	}
 #ifdef CONFIG_MMC_SDHCI_DWCMSHC
 	}
 #endif

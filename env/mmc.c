@@ -20,7 +20,7 @@
 #include <search.h>
 #include <errno.h>
 #ifdef CONFIG_MMC_SDRV
-#include <sdrv/emmc_partitions.h>
+#include <emmc_partitions.h>
 #endif
 
 #define __STR(X) #X

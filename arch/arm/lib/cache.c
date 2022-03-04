@@ -149,7 +149,7 @@ __weak int arm_reserve_mmu(void)
 	gd->relocaddr &= ~(0x10000 - 1);
 
 	gd->arch.tlb_addr = gd->relocaddr;
-	debug("TLB table from %08lx to %08lx\n", gd->arch.tlb_addr,
+	printf("TLB table from %08lx to %08lx\n", gd->arch.tlb_addr,
 	      gd->arch.tlb_addr + gd->arch.tlb_size);
 
 #ifdef CONFIG_SYS_MEM_RESERVE_SECURE

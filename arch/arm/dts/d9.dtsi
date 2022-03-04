@@ -7,7 +7,7 @@
  */
 
 #include <dt-bindings/interrupt-controller/arm-gic.h>
-
+#include <dt-bindings/display/dpu-sdx9.h>
 #include <dt-bindings/clk/x9-clk.h>
 #include <dt-bindings/dma/x9-dmac-slave-id.h>
 #include <dt-bindings/gpio/gpio.h>
@@ -1028,7 +1028,129 @@
 			status = "disabled";
 		};
 
+		csi0:csi@30cc0000 {
+			compatible = "semidrive,sdrv-csi";
+			reg = <0x0 0x30CC0000 0x0 0x10000>;
+			interrupts = <0 141 4>;
+			host_id = <0>;
+			status = "disabled";
 
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				csi0_stream0: port@0 {
+					#address-cells = <1>;
+					#size-cells = <0>;
+					reg = <0>;
+					csi0_stream0_in: endpoint@0 {
+						reg = <0>;
+					};
+				};
+
+				csi0_stream1: port@1 {
+					#address-cells = <1>;
+					#size-cells = <0>;
+					reg = <1>;
+					csi0_stream1_in: endpoint@0 {
+						reg = <1>;
+					};
+				};
+
+				csi0_stream2: port@2 {
+					#address-cells = <1>;
+					#size-cells = <0>;
+					reg = <2>;
+					csi0_stream2_in: endpoint@0 {
+						reg = <2>;
+					};
+				};
+
+				csi0_stream3: port@3 {
+					#address-cells = <1>;
+					#size-cells = <0>;
+					reg = <3>;
+					csi0_stream3_in: endpoint@0 {
+						reg = <3>;
+					};
+				};
+			};
+		};
+
+		csi2:csi@30ce0000 {
+			compatible = "semidrive,sdrv-csi";
+			reg = <0x0 0x30CE0000 0x0 0x10000>;
+			interrupts = <0 143 4>;
+			host_id = <2>;
+			status = "disabled";
+
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				csi2_stream0: port@0 {
+					#address-cells = <1>;
+					#size-cells = <0>;
+					reg = <0>;
+					csi2_stream0_in: endpoint@0 {
+						reg = <0>;
+					};
+				};
+
+				csi2_stream1: port@1 {
+					#address-cells = <1>;
+					#size-cells = <0>;
+					reg = <1>;
+					csi2_stream1_in: endpoint@0 {
+						reg = <1>;
+					};
+				};
+
+				csi2_stream2: port@2 {
+					#address-cells = <1>;
+					#size-cells = <0>;
+					reg = <2>;
+					csi2_stream2_in: endpoint@0 {
+						reg = <2>;
+					};
+				};
+
+				csi2_stream3: port@3 {
+					#address-cells = <1>;
+					#size-cells = <0>;
+					reg = <3>;
+					csi2_stream3_in: endpoint@0 {
+						reg = <3>;
+					};
+				};
+			};
+		};
+
+		csimipi0:csi-mipi@30d00000 {
+			compatible = "semidrive,sdrv-csi-mipi";
+			reg = <0x0 0x30d00000 0x0 0x10000>, <0x0 0x30d50000 0x0 0x1000>;
+			interrupts = <0 144 4>;
+			host_id = <0>;
+			status = "disabled";
+		};
+
+		csiparallel0:csi-parallel@0 {
+			compatible = "semidrive,sdrv-csi-parallel";
+			status = "disabled";
+
+			port {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				csiparallel0_in: endpoint@0 {
+					reg = <0>;
+				};
+
+				csiparalle0_out: endpoint@1 {
+					reg = <1>;
+				};
+			};
+		};
 
 		ospi1: spi@30020000 {
 			compatible = "cdns,qspi-nor";
@@ -1197,7 +1319,183 @@
 			status     = "disabled";
 		};
 
+		g2d: g2d@30c90000 {
+			compatible = "semidrive,g2d";
+			reg = <0x00 0x30c90000 0x00 0x10000>;
+			interrupts = <0 147 4>;
+			status = "disabled";
+			sdrv,ip = "g2d-r0p1";
+		};
 
+		display: display@0 {
+			compatible = "semdrive,display-subsystem";
+			sdriv,crtc = <&crtc0>;
+			status = "disabled";
+		};
+
+		dc1: dc1@30db0000 {
+			compatible = "sdrv,dc";
+			reg = <DC1_BASE DPU_RANGE>;
+			interrupts = <0 DC1_IRQ 4>;
+			status = "disabled";
+			sdrv,ip = "dc-r0p1";
+		};
+
+		crtc0: crtc0 {
+			compatible = "semidrive,kunlun-crtc";
+			dpc-master = <&dc1>;
+			display-mode = <1>; //1 single mode, 2: duplicate mode, 3: combine mode
+
+			crtc0_out: port {
+				crtc0_out_interface: endpoint@0 {
+					remote-endpoint = <&parallel_in_crtc0>;
+				};
+			};
+		};
+
+		parallel0: parallel@0 {
+			compatible = "semidrive, kunlun-display-parallel";
+			status = "disabled";
+
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				parallel0_in: port@0 {
+					parallel_in_crtc0: endpoint@0 {
+						remote-endpoint = <&crtc0_out_interface>;
+					};
+				};
+
+				parallel0_out: port@1 {
+					#address-cells = <1>;
+					#size-cells = <0>;
+					reg = <1>;
+					parallel_out_timing0: endpoint@0 {
+						reg = <0>;
+						remote-endpoint = <&parall_panel0_in>;
+					};
+				};
+			};
+		};
+
+		lvds0: lvds0@30660000 {
+			compatible = "semidrive, kunlun-display-lvds";
+			reg = <LVDS_BASE LVDS_RANGE>;
+			lvds-select = <1>;
+			dual-mode = <0>;
+			lvds-combine = <0>;
+			map-format = <1>;
+			pixel-format = <1>;
+
+			status = "disabled";
+
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				lvds0_in: port@0 {
+					lvds_in_crtc0: endpoint@0 {
+						remote-endpoint = <&crtc0_out_interface>;
+					};
+				};
+
+				lvds0_out: port@1 {
+					#address-cells = <1>;
+					#size-cells = <0>;
+					reg = <1>;
+					lvds_out_timing0: endpoint@0 {
+						reg = <0>;
+						remote-endpoint = <&parall_panel0_in>;
+					};
+				};
+			};
+		};
+/*
+		lvds1: lvds1@30670000 {
+			compatible = "semidrive, kunlun-display-lvds";
+			reg = <LVDS_BASE LVDS_RANGE>;
+			lvds-select = <2>;
+			dual-mode = <0>;
+			lvds-combine = <0>;
+			map-format = <1>;
+			pixel-format = <1>;
+
+			status = "disabled";
+
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				lvds1_in: port@0 {
+					lvds_in_crtc1: endpoint@0 {
+						remote-endpoint = <&crtc1_out_interface>;
+					};
+				};
+
+				lvds1_out: port@1 {
+					#address-cells = <1>;
+					#size-cells = <0>;
+					reg = <1>;
+					lvds_out_timing1: endpoint@0 {
+						reg = <0>;
+						remote-endpoint = <&parall_panel1_in>;
+					};
+				};
+			};
+		};
+*/
+		dsi0: dsi0@30D60000 {
+			compatible = "semidrive,dsi-host";
+			reg = <0x0 0x30d60000 0x0 0x10000>;
+			interrupts = <0 139 4>;
+			status = "disabled";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			ports {
+
+				dsi0_in: port@0 {
+					dsi_in_crtc0: endpoint@0 {
+						remote-endpoint = <&crtc0_out_interface>;
+					};
+				};
+			};
+		};
+
+		ptimings0: parallel-timings@0 {
+			compatible = "semidrive,panel-simple";
+			status = "disabled";
+
+			port {
+				parall_panel0_in: endpoint {
+					remote-endpoint = <&parallel_out_timing0>;
+				};
+			};
+
+			dtimings0: display-timings {
+			};
+		};
+
+		ptimings1: parallel-timings@1 {
+			compatible = "semidrive,panel-simple";
+			status = "disabled";
+
+			dtimings1: display-timings {
+			};
+		};
+
+		ptimings2: parallel-timings@2 {
+			compatible = "semidrive,panel-simple";
+			status = "disabled";
+
+			dtimings2: display-timings {
+			};
+		};
+
+		ptimings3: parallel-timings@3 {
+			compatible = "semidrive,panel-simple";
+			status = "disabled";
+
+			dtimings3: display-timings {
+			};
+		};
 
 		ethernet1: eth@30170000 {
 			compatible = "semidrive,dwc-qos-ethernet";

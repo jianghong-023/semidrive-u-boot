@@ -736,14 +736,10 @@ static int designware_i2c_set_bus_speed(struct udevice *bus, unsigned int speed)
 	struct dw_i2c *i2c = dev_get_priv(bus);
 	ulong rate;
 
-#if CONFIG_IS_ENABLED(CLK)
-	#if CONFIG_IS_ENABLED(SDRV_I2C_USE_DEF_CLK)
-		rate = IC_CLK;
-	#else
-		rate = clk_get_rate(&i2c->clk);
-		if (IS_ERR_VALUE(rate))
-			return log_ret(-EINVAL);
-	#endif
+#if 0 /* CONFIG_IS_ENABLED(CLK) */
+	rate = clk_get_rate(&i2c->clk);
+	if (IS_ERR_VALUE(rate))
+		return log_ret(-EINVAL);
 
 #else
 	rate = IC_CLK;
@@ -778,6 +774,7 @@ int designware_i2c_of_to_plat(struct udevice *bus)
 	dev_read_u32(bus, "i2c-scl-falling-time-ns", &priv->scl_fall_time_ns);
 	dev_read_u32(bus, "i2c-sda-hold-time-ns", &priv->sda_hold_time_ns);
 
+    #if 0
 	ret = reset_get_bulk(bus, &priv->resets);
 	if (ret) {
 		if (ret != -ENOTSUPP)
@@ -785,8 +782,9 @@ int designware_i2c_of_to_plat(struct udevice *bus)
 	} else {
 		reset_deassert_bulk(&priv->resets);
 	}
-
-#if CONFIG_IS_ENABLED(CLK) && !CONFIG_IS_ENABLED(SDRV_I2C_USE_DEF_CLK)
+    #endif
+#if CONFIG_IS_ENABLED(CLK)
+    #if 0
 	ret = clk_get_by_index(bus, 0, &priv->clk);
 	if (ret)
 		return ret;
@@ -797,6 +795,7 @@ int designware_i2c_of_to_plat(struct udevice *bus)
 		dev_err(bus, "failed to enable clock\n");
 		return ret;
 	}
+    #endif
 #endif
 
 	return 0;
@@ -817,7 +816,30 @@ int designware_i2c_probe(struct udevice *bus)
 	log_debug("I2C bus %s version %#x\n", bus->name,
 		  readl(&priv->regs->comp_version));
 
-	return __dw_i2c_init(priv->regs, 0, 0);
+	#ifdef CONFIG_SC_I2C_TEST
+    int ret;
+		ret = __dw_i2c_init(priv->regs, 100000, 0x66);
+	if (ret ==0) {
+        struct i2c_msg *msg;
+        u8 sen_dat[5] = {0x11, 0x22, 0x33, 0x44, 0x55};
+        msg->addr = 0x60;
+        msg->flags = I2C_M_RD;
+        msg->len = 5;
+        msg->buf = sen_dat;
+        ret = __dw_i2c_read(priv->regs, msg->addr, 0, 0,
+                            msg->buf, msg->len);
+        if(ret)
+		log_err("smart chip i2c read or write test err \n");
+		else
+        log_debug("smart chip i2c read or write test ok \n");
+        return ret;
+		
+	}
+	else
+        return ret;
+    #else
+    return __dw_i2c_init(priv->regs, 0, 0);
+    #endif
 }
 
 int designware_i2c_remove(struct udevice *dev)

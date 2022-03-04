@@ -1,0 +1,9 @@
+#
+# Phy drivers for semidrive platforms
+#
+config PHY_SEMIDRIVE_USB
+	tristate "Semidrive USB PHY Driver"
+	depends on ARCH_SEMIDRIVE
+	select PHY
+	help
+	  Support USB3.0 PHY with synopsys IP block

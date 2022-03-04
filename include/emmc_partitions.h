@@ -13,8 +13,8 @@
 struct partitions {
 	char name[PART_NAME_LEN];	/* identifier string */
 	u8 num; /* partition num */
-	u64 size;	/* partition size */
-	u64 offset;	/* offset within the master space */
+	uint64_t size;	/* partition size */
+	uint64_t offset;	/* offset within the master space */
 	unsigned int mask_flags;	/* master flags to mask out for this partition */
 };
 

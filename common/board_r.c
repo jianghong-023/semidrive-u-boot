@@ -99,6 +99,7 @@ __weak int cpu_secondary_init_r(void)
 
 static int initr_trace(void)
 {
+printf("%s \n",__FUNCTION__);
 #ifdef CONFIG_TRACE
 	trace_init(gd->trace_buff, CONFIG_TRACE_BUFFER_SIZE);
 #endif
@@ -134,6 +135,7 @@ __weak int fixup_cpu(void)
 
 static int initr_reloc_global_data(void)
 {
+printf("%s \n",__FUNCTION__);
 #ifdef __ARM__
 	monitor_flash_len = _end - __image_copy_start;
 #elif defined(CONFIG_NDS32) || defined(CONFIG_RISCV)
@@ -179,7 +181,7 @@ static int initr_reloc_global_data(void)
 
 	efi_runtime_relocate(gd->relocaddr, NULL);
 #endif
-
+printf("%s \n",__FUNCTION__);
 	return 0;
 }
 
@@ -253,7 +255,7 @@ static int initr_of_live(void)
 static int initr_dm(void)
 {
 	int ret;
-
+printf("%s \n",__FUNCTION__);
 	/* Save the pre-reloc driver model and start a new one */
 	gd->dm_root_f = gd->dm_root;
 	gd->dm_root = NULL;
@@ -581,6 +583,7 @@ int initr_mem(void)
 static int sdrv_dtb_load(void)
 {
 	run_command(env_get("load_kernel_dtb"), 0);
+
 	return 0;
 }
 
@@ -805,6 +808,7 @@ static init_fnc_t init_sequence_r[] = {
 	(init_fnc_t)efi_init_obj_list,
 #endif
 	sdrv_dtb_load,
+
 	run_main_loop,
 };
 
@@ -816,6 +820,7 @@ void board_init_r(gd_t *new_gd, ulong dest_addr)
 	 * TODO(sjg@chromium.org): Consider doing this for all archs, or
 	 * dropping the new_gd parameter.
 	 */
+	 printf("%s \n",__FUNCTION__);
 #if CONFIG_IS_ENABLED(X86_64)
 	arch_setup_gd(new_gd);
 #endif

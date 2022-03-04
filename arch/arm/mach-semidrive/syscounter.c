@@ -45,6 +45,7 @@ void __udelay(unsigned long usec)
 		;
 }
 
+#ifdef CONFIG_SYSCOUNTER_IRQ
 void timer_irq_handler(void *arg)
 {
 	struct timer *timer = (struct timer *)arg;
@@ -104,3 +105,4 @@ void del_timer(void)
 {
 	free_irq(ARCH_TIMER_IRQ);
 }
+#endif

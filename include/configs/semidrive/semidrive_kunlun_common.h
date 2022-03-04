@@ -31,8 +31,6 @@
 #define CONFIG_SPL_STACK_R_ADDR		(CONFIG_SPL_BSS_START_ADDR - \
 					SPL_RESERVE_SIZE)
 #define CONFIG_MALLOC_F_ADDR	(CONFIG_SPL_TEXT_BASE + CONFIG_SPL_MAX_SIZE)
-#define CONFIG_DEBUG_UART_BASE	0x30520000
-#define CONFIG_DEBUG_UART_CLOCK 60000000
 #ifndef CONFIG_SPL_DM
 /* As spl without dtb, so it can't use DM mode */
 #define CONFIG_CONS_INDEX		1
@@ -63,12 +61,11 @@
 
 #ifndef BOOT_TARGET_DEVICES
 #define BOOT_TARGET_DEVICES(func) \
-	(\
+	func(ROMUSB, romusb, na)  \
 	func(MMC, mmc, 0) \
 	func(MMC, mmc, 1) \
 	func(MMC, mmc, 2) \
-	BOOT_TARGET_DEVICES_USB(func) \
-	)
+	BOOT_TARGET_DEVICES_USB(func)
 #endif
 
 #endif /* __SDRV_KUNLUN_COMMON_H__ */

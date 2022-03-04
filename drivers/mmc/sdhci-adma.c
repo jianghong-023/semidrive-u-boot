@@ -35,6 +35,7 @@ static void sdhci_adma_desc(struct sdhci_adma_desc *desc,
 		typeof(y) _y = y; \
 		(_x + _y) & ~(_y - 1); \
 	})
+
 #define FV_ADMA2_ATTR_LEN(v) \
 	({ \
 		typeof(v) _v = v; \
@@ -42,7 +43,7 @@ static void sdhci_adma_desc(struct sdhci_adma_desc *desc,
 	})
 
 static void sdhci_adma64_desc(struct sdhci_adma64_desc *desc,
-			      dma_addr_t addr, u32 len, bool end)
+			    dma_addr_t addr, u32 len, bool end)
 {
 	u8 attr;
 
@@ -52,7 +53,7 @@ static void sdhci_adma64_desc(struct sdhci_adma64_desc *desc,
 	else
 		attr |= ADMA_DESC_TRANSFER_DATA;
 
-	desc->attr = attr | FV_ADMA2_ATTR_LEN(len);
+	desc->attr = attr | FV_ADMA2_ATTR_LEN(len);;
 	desc->addr_lo = lower_32_bits(addr);
 #ifdef CONFIG_DMA_ADDR_T_64BIT
 	desc->addr_hi = upper_32_bits(addr);
@@ -60,7 +61,7 @@ static void sdhci_adma64_desc(struct sdhci_adma64_desc *desc,
 }
 
 void sdhci_prepare_adma2_table(struct sdhci_adma64_desc *table,
-			       struct mmc_data *data, dma_addr_t addr)
+			      struct mmc_data *data, dma_addr_t addr)
 {
 	uint trans_bytes = data->blocksize * data->blocks;
 	struct sdhci_adma64_desc *desc = table;
@@ -99,7 +100,7 @@ void sdhci_prepare_adma2_table(struct sdhci_adma64_desc *table,
 
 	for (i = 0; i < desc_cnt; i++) {
 		pr_debug("%d: desc_addr_h = %x, desc_addr_l = %x, desc_attr = %x\n",
-			 i, desc_bak->addr_hi, desc_bak->addr_lo, desc_bak->attr);
+				i, desc_bak->addr_hi, desc_bak->addr_lo, desc_bak->attr);
 		desc_bak++;
 	}
 	flush_cache((dma_addr_t)table,

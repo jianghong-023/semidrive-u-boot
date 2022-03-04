@@ -124,7 +124,7 @@ const struct flash_info spi_nor_ids[] = {
 	},
 	{
 		INFO("gd25lx512", 0xc8681a, 0, 64 * 1024, 1024,
-		     SECT_4K | SPI_NOR_OCTAL_READ | SPI_NOR_4B_OPCODES)
+		    SECT_4K | SPI_NOR_OCTAL_READ | SPI_NOR_4B_OPCODES)
 	},
 
 #endif

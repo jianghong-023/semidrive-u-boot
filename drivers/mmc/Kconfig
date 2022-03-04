@@ -530,9 +530,7 @@ config MMC_SDRV
 	tristate "MMC support for the SDRV"
 	depends on MMC_SDHCI_DWCMSHC
 	help
-	  This selects SemiDrive MMC partition config support.
-	  mmc may need ext4 filesystem supported, so add gpt
-	  partitions supported.
+	  This selects SemiDrive MMC config support.
 	  If you need this interface, say Y or M here.
 	  If unsure, say N.
 

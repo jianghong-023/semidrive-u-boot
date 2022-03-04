@@ -28,6 +28,7 @@ enum timer_restart {
 	TIMER_RESTART,
 };
 
+#ifdef CONFIG_SYSCOUNTER_IRQ
 struct timer {
 	int time_ms;
 	int (*function)(struct timer *timer);
@@ -39,6 +40,5 @@ void start_timer(struct timer *timer);
 void stop_timer(void);
 int mod_timer(struct timer *timer, int time_ms);
 void del_timer(void);
-
-
+#endif
 #endif
