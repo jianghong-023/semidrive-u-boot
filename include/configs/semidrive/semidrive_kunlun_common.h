@@ -49,7 +49,20 @@
 
 #define CONFIG_ARMV8_SWITCH_TO_EL1
 
-#define CONFIG_SYS_INIT_SP_ADDR		0x80000000
+#ifdef CONFIG_TARGET_D9LITE_REF
+#include <dt-bindings/memmap/d9lite/projects/default/image_cfg.h>
+#define CONFIG_SYS_INIT_SP_ADDR (AP2_KERNEL_MEMBASE + 0x100000)
+#elif CONFIG_TARGET_D9PLUS_AP1_REF
+#include <dt-bindings/memmap/d9plus/projects/default/image_cfg.h>
+#define CONFIG_SYS_INIT_SP_ADDR (AP1_KERNEL_MEMBASE + 0x100000)
+#elif CONFIG_TARGET_D9PLUS_AP2_REF
+#include <dt-bindings/memmap/d9plus/projects/default/image_cfg.h>
+#define CONFIG_SYS_INIT_SP_ADDR (AP2_KERNEL_MEMBASE + 0x100000)
+#else
+#include <dt-bindings/memmap/d9/projects/default/image_cfg.h>
+#define CONFIG_SYS_INIT_SP_ADDR (AP1_KERNEL_MEMBASE + 0x100000)
+#endif
+
 #define CONFIG_SYS_LOAD_ADDR		CONFIG_SYS_TEXT_BASE
 #define CONFIG_SYS_BOOTM_LEN		(64 << 20) /* 64 MiB */
 
