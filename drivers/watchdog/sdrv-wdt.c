@@ -229,7 +229,11 @@ void sdrv_set_bootreason(struct udevice *dev)
 	size_t i;
 	int ret, reason, val;
 
+#ifdef CONFIG_TARGET_D9PLUS_AP2_REF
+	reason = HALT_REASON_SW_RESET;
+#else
 	reason = HALT_REASON_SW_GLOBAL_POR;
+#endif
 
 	val = readl(BOOT_REASON_ADDRESS);
 	if (!ret) {
